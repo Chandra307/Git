@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>JS For Beginners</title>
+    <!-- <link rel="stylesheet" href="style.css"> -->
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+          font-family: Arial, Helvetica, sans-serif;
+          line-height: 1.6;
+      } 
+      ul {
+        list-style: none;
+      } 
+      ul li {
+        padding: 5px;
+        background: #f4f4f4;
+        margin: 5px 0;
+      } 
+      header {
+        background: #f4f4f4;
+        padding: 1rem;
+        text-align: center;
+      }
+      .container {
+        margin: auto;
+        width: 500px;
+        overflow: auto;
+        padding: 3rem 2rem;
+      } 
+      #my-form {
+        padding: 2rem;
+        background: #f4f4f4;
+      }
+      #my-form label {
+        display: block;
+      }  
+      #my-form input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+      .btn {
+        display: block;
+        width: 100%;
+        padding: 10px 10px;
+        border: 0;
+        background: #333;
+        color: #fff;
+        border-radius: 5px;
+        margin: 5px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>JS For Beginners</h1>
+    </header>
+
+    <section class="container">
+      <form id="my-form" novalidate>
+        <h1>Add User</h1>
+        <div class="msg"></div>
+        <div>
+          <label for="name">Name:</label>
+          <input type="text" id="name" required>
+        </div>
+        <div>
+          <label for="email">Email:</label>
+          <input type="email" id="email" required>
+        </div>
+        <input class="btn" type="submit" value="Submit">
+      </form>
+
+      <ul id="users"></ul>
+    </section>
+    
+    <script>
+      let form = document.querySelector('#my-form');
+      let body = document.querySelector('body');
+      let btn = document.querySelector('.btn')
+      let nameinput = document.getElementById('name');
+      let mailinput = document.getElementById('email');
+      let msg = document.querySelector('.msg');
+      let ul = document.querySelector('ul');
+
+      btn.addEventListener('mouseover', onclick);
+      function onclick(e) {
+        e.preventDefault();
+        body.style.background = "#333";
+        body.style.color = '#bbb';
+      }
+      btn.addEventListener('mouseout', (e) => {
+      body.style.background = '#fff';
+      body.style.color = '#333';
+      })
+
+      btn.addEventListener('click',(e) => {
+        e.preventDefault()
+        if(!nameinput.value || !mailinput.value){
+          msg.style.background='orangered';
+          msg.style.color='white';
+          msg.style.margin='3px';
+          msg.style.padding='5px';
+          
+          msg.innerHTML = "Please enter your details."
+          setTimeout(() => msg.remove(), 2000); 
+        }
+        else{
+          let li = document.createElement('li');
+          li.appendChild(document.createTextNode(nameinput.value));
+          ul.appendChild(li);
+          let li_1 = document.createElement('li');
+          li_1.appendChild(document.createTextNode(`${mailinput.value}`));
+          ul.appendChild(li_1);
+        //   console.log(nameinput.value);
+        //   console.log(mailinput.value);
+          localStorage.setItem('userName',nameinput.value);
+          localStorage.setItem('userEmail',mailinput.value)
+          nameinput.value = '';
+          mailinput.value = '';
+        }
+        });
+
+    </script>
+  </body>
+</html>
