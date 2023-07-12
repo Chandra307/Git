@@ -78,6 +78,10 @@
           <label for="email">Email:</label>
           <input type="email" id="email" required>
         </div>
+        <div>
+          <label for="tel">Phone:</label>
+          <input type="tel" id="tel" required>
+        </div>
         <input class="btn" type="submit" value="Submit">
       </form>
 
@@ -90,6 +94,7 @@
       let btn = document.querySelector('.btn')
       let nameinput = document.getElementById('name');
       let mailinput = document.getElementById('email');
+      let phoneinput = document.getElementById('tel');
       let msg = document.querySelector('.msg');
       let ul = document.querySelector('ul');
 
@@ -106,7 +111,8 @@
 
       btn.addEventListener('click',(e) => {
         e.preventDefault();
-        if(!nameinput.value || mailinput.value.indexOf('@')===-1){
+        if(!nameinput.value || mailinput.value.indexOf('@')===-1
+        || !phoneinput.value){
           msg.style.background='orangered';
           msg.style.color='white';
           msg.style.margin='3px';
@@ -118,19 +124,22 @@
         else{
           let li = document.createElement('li');
           li.appendChild(document.createTextNode(nameinput.value));
+          li.appendChild(document.createTextNode(' - '));
+          li.appendChild(document.createTextNode(`${mailinput.value}`));
+          li.appendChild(document.createTextNode(' - '));
+          li.appendChild(document.createTextNode(phoneinput.value));
           ul.appendChild(li);
-          let li_1 = document.createElement('li');
-          li_1.appendChild(document.createTextNode(`${mailinput.value}`));
-          ul.appendChild(li_1);
-          let obj = {
-            userName : nameinput.value,
-            userEmail : mailinput.value
+      
+          let obj  = {
+            Name : nameinput.value,
+            Email : mailinput.value,
+            Phone : phoneinput.value
           }
-          localStorage.setItem("userDetails",JSON.stringify(obj));
+          localStorage.setItem(mailinput.value,JSON.stringify(obj));
           nameinput.value = '';
           mailinput.value = '';
+          phoneinput.value = '';
         }
-        console.log(localStorage);
       });
 
     </script>
