@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>JS For Beginners</title>
+    <!-- <link rel="stylesheet" href="style.css"> -->
+    <style>
+      /* * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+          font-family: Arial, Helvetica, sans-serif;
+          line-height: 1.6;
+      } 
+      ul {
+        list-style: none;
+      } 
+      ul li {
+        padding: 5px;
+        background: #f4f4f4;
+        margin: 5px 0;
+      } 
+      header {
+        background: #f4f4f4;
+        padding: 1rem;
+        text-align: center;
+      }
+      .container {
+        margin: auto;
+        width: 500px;
+        overflow: auto;
+        padding: 3rem 2rem;
+      } 
+      #my-form {
+        padding: 2rem;
+        background: #f4f4f4;
+      }
+      #my-form label {
+        display: block;
+      }  
+      #my-form input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+      .btn {
+        display: block;
+        width: 100%;
+        padding: 10px 10px;
+        border: 0;
+        background: #333;
+        color: #fff;
+        border-radius: 5px;
+        margin: 5px 0;
+      } */
+    </style>
+  </head>
+  <body>
+    <div id="list">
+        <form>
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" name="Name" required>
+            <label for="mail" class="form-label" >Email</label>
+            <input type="email" class="form-control" id="mail" name="Email" required>
+            <label for="phone" class="form-label" >Phone</label>
+            <input type="tel" class="form-control" id="phone" name="Phone" required>
+            <button style="padding-left: 4px;padding-right: 3px;">Submit</button>
+        </form>
+    </div>
+    
+    
+    <script>
+        let submit = document.getElementById('phone').nextElementSibling;
+        submit.addEventListener('click', (e) => {
+            e.preventDefault();
+            let nameInput = document.getElementById('name').value;
+            let mailInput = document.getElementById('mail').value;
+            let phoneInput = document.getElementById('phone').value;
+            let ul = document.createElement('ul');
+            let obj = {
+                name : nameInput,
+                email : mailInput,
+                phone : phoneInput
+            }
+            
+            localStorage.setItem(mailInput,JSON.stringify(obj));
+            let li = document.createElement('li');
+            // li.appendChild(document.createTextNode(nameInput));
+            // li.appendChild(document.createTextNode(' - '));
+            // li.appendChild(document.createTextNode(mailInput));
+            // li.appendChild(document.createTextNode(' - '));
+            // li.appendChild(document.createTextNode(phoneInput));
+            let el = nameInput + ' - ' + mailInput + ' - '+ phoneInput;
+            li.appendChild(document.createTextNode(el));
+            let del = document.createElement('button');
+            del.className = 'delete';
+            del.appendChild(document.createTextNode('Delete'));
+            let edit = document.createElement('button');
+            edit.className = "editIt";
+            edit.appendChild(document.createTextNode('Edit'));
+            li.appendChild(del);
+            li.appendChild(edit);
+            ul.appendChild(li);
+            document.getElementById('list').appendChild(ul);
+            
+            del.addEventListener('click',(e)=>{
+              e.preventDefault();
+              if(e.target.textContent.indexOf('Delete') > -1){
+                ul.remove(e.target.parentElement);
+                localStorage.removeItem(mailInput);
+              }
+            })
+            edit.addEventListener('click', (e) => {
+              e.preventDefault();
+              if(e.target.textContent.indexOf('Edit') > -1){
+                ul.remove(e.target.parentElement);
+                localStorage.removeItem(mailInput);
+
+                document.getElementById('name').value = nameInput;
+                document.getElementById('mail').value = mailInput;
+                document.getElementById('phone').value = phoneInput;
+                
+              }
+            })
+
+          });
+
+    </script>
+  </body>
+</html>
