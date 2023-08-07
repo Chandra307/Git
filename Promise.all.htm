@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A mini project</title>
+</head>
+<body>
+    <h1>Practising Promise.all</h1>
+    <script>
+        const posts = [];
+        const users = {name:'User1',lastACtive:new Date()}
+        console.log(users.name,'was last active on:',users.lastACtive);
+        function updateLastUserActivityTime(){
+            return promise1 = new Promise((res,rej) => {
+                setTimeout(()=>{
+                    users.lastActivityTime = new Date();
+                    let error;
+                    res(users.lastActivityTime);
+                    if(error)
+                    rej('Error');
+                },1000)
+            })
+        }
+        function createPost(post){
+            return promise2 = new Promise((res,rej)=> {
+                    posts.push(post);
+                    updateLastUserActivityTime();
+                    let error;
+                    res();        
+                    if(error)
+                    rej('Error');
+            })
+        }
+        function deletePost(){
+            return new Promise((res,rej)=>{
+                setTimeout(()=>{
+                    posts.pop();
+                    res();
+                },1000)
+            })
+        }
+        const promise3 = new Promise((res,rej) => {
+            setTimeout(()=>{        
+                console.log('and after creating post(s)......');
+                console.log('posts','>>',posts);
+                console.log(users.name,'last activity time before deletion =',new Date().getTime())
+                let error;
+                res();
+                if(error)
+                rej('ERROR')
+            },1000)
+        });
+
+        createPost({title:'Post1'});
+        createPost({title:'Post2'});
+        createPost({title:'Post3'});
+        // createPost({title:'Post4'});
+        Promise.all([promise1,promise2])
+            .then( () => {
+                promise3
+                    .then( () => {
+                        deletePost()
+                            .then( () => {
+        
+                                console.log('-- After deletion --')
+                                console.log('posts >>',posts);
+                                console.log(users.name, 'lastActivity at:', new Date().getTime());
+        
+                            }).catch(err => console.log(err));
+        
+                    }).catch(err => console.log(err));
+        
+            }).catch(err => console.log(err));
+
+    </script>
+</body>
+</html>
