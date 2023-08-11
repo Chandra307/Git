@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>CRUD</title>
+
+    <style>
+    </style>
+
+
+</head>
+
+<body>
+    <form onsubmit="getDetails(event)">
+        
+            <label for="name">Name:</label>
+            <input type="text" id="name" >
+        
+            <label for="email">Email:</label>
+            <input type="email" id="mail" >
+        
+            <label for="phone">Phone:</label>
+            <input type="tel" id="phone" >
+        
+        <input class="btn" type="submit" value="Submit">
+    </form>
+
+    <ul id="users"></ul>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+    <script src="delete.js"></script>
+</body>
+
+</html>
