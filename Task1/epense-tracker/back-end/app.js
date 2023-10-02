@@ -14,6 +14,7 @@ app.use(cors());
 app.use(bodyParser.json({extended: false}));
 
 app.post('/user/signup', controller.addUser);
+app.post('/user/login', controller.getUser);
 
 sequelize.sync()
 // sequelize.sync({force: true})

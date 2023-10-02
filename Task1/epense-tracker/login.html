@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <style>
+        form {
+            width: 18rem;
+            margin: auto;
+            padding: 1rem;
+        }
+        label {
+            display: block;
+            margin-top: 0.5rem;
+        }
+        input {
+            width: 95%;
+            margin-top: 1px;
+        }
+        button {
+            margin: 0.5rem 0;
+        }
+        a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <form>
+        <label for="mail">Enter email</label>
+        <input type="email" id="mail" name="email" required>
+        <label for="password">Enter password</label>
+        <input type="password" id="password" name="password" minlength="6" required><br/>
+        <button type="submit">Login</button>
+        <a href="../Signup/signup.html">New User? - Signup here!</a>
+    </form>
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.0/axios.min.js"></script>
+    <script>
+        document.querySelector('form').onsubmit = async (e) => {
+            try{
+                e.preventDefault();
+                
+                if(document.querySelector('#error')){
+                    document.querySelector('#error').remove();
+                }
+                
+                let obj = {
+                    email: e.target.email.value,
+                    password: e.target.password.value
+                };
+                e.target.reset();
+                console.log(obj);
+                const response = await axios.post('http://localhost:3000/user/login', obj);
+                console.log(response.data, response.data.message);
+                if(response.status === 200){
+                    // window.location.href = '../Login/login.html';
+                    alert(response.data.message);
+                }
+            }catch(err){
+                console.log(err);
+                document.querySelector('form').innerHTML += `<p id='error' style='color: red;'>${err.response.data}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
