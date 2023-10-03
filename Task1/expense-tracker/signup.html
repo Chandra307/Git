@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <style>
+        form {
+            width: 18rem;
+            margin: auto;
+            padding: 1rem;
+        }
+        label {
+            display: block;
+            margin-top: 0.5rem;
+        }
+        input {
+            width: 95%;
+            margin-top: 1px;
+        }
+        button {
+            margin: 0.5rem 0;
+            /* display: block; */
+        }
+    </style>
+</head>
+<body>
+    <form>
+        <label for="name">Enter name</label>
+        <input type="text" id="name" name="name" required>
+        <label for="phone">Enter phone number</label>
+        <input type="tel" id="phone" name="phone" required>
+        <label for="mail">Enter email</label>
+        <input type="email" id="mail" name="email" required>
+        <label for="password">Enter password</label>
+        <input type="password" id="password" name="password" minlength="6" required><br/>
+        <button type="submit">Signup</button>
+        <a href="./login.html">Existing User-Login</a>
+    </form>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.0/axios.min.js"></script>
+    <script>
+        document.querySelector('form').onsubmit = async (e) => {
+            try{
+                e.preventDefault();
+                
+                if(document.querySelector('#error')){
+                    document.querySelector('#error').remove();
+                }
+                
+                let obj = {
+                    name: document.getElementById('name').value,
+                    phone: document.getElementById('phone').value,
+                    email: document.getElementById('mail').value,
+                    password: document.getElementById('password').value
+                };
+                e.target.reset();
+                console.log(obj);
+                const response = await axios.post('http://localhost:3000/user/signup', obj);
+                if(response.status === 201){
+                    window.location.href = './login.html';
+                }
+            }catch(err){
+                console.log(err);
+                document.querySelector('form').innerHTML += `<p id='error' style='color: red;'>${err}</p>`;
+
+                
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,5 +1,7 @@
 const User = require('../models/user');
 
+const bcrypt = require('bcryptjs');
+
 function isInputInvalid(value){
     if(!value){
         return true;
@@ -10,18 +12,25 @@ function isInputInvalid(value){
 
 exports.addUser = async (req, res, next) => {
     try{
-        const {name, email, phone, password} = req.body;
+        let {name, email, phone, password} = req.body;
+
         if(isInputInvalid(name) || isInputInvalid(email) || isInputInvalid(phone) || isInputInvalid(password)){
             return res.status(400).json('Error: Make sure you fill all input fields!');
         }
-        const outcome = await User.create({
-            name,
-            email,
-            phone,
-            password
-        });
 
-        res.status(201).json(outcome);
+        const saltrounds = 10;
+        bcrypt.hash(password, saltrounds, async (err, hash) => {
+            try{
+                console.log(err);
+                password = hash;        
+                const outcome = await User.create( {name, email, phone, password} );          
+                res.status(201).json(outcome);
+            }
+            catch(err){
+                console.log(err);
+                res.status(500).json(err);
+            }
+        })
     }
     catch(err){
         res.status(403).json(err);
@@ -39,12 +48,22 @@ exports.getUser = async (req, res, next) => {
         if(!user){
             return res.status(404).json(`User doesn't exist!`);
         }
-        if(user && password != user.password){
-            return res.status(401).json(`Incorrect password!`);
-        }
-        res.json({success: true, message: 'User logged in succesfully!'});
+
+        bcrypt.compare(password, user.password, (err, result) => {
+            if(err){
+                throw new Error();
+            }
+            if(result || password === user.password){
+                console.log(password === user.password, 'result = ', result);
+                return res.json({success: true, message: 'User logged in succesfully!'});
+            }
+            else {
+                console.log(result, password, user.password, 'boolean');
+                res.status(401).json(`Incorrect password!`);
+            }
+        })
     }
     catch(err){
-        res.status(404).json(err);
+        res.status(500).json(err);
     }
 }
