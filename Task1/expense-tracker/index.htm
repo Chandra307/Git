@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <style>
+        form {
+            width: 18rem;
+            margin: auto;
+            padding: 1rem;
+        }
+        label {
+            display: block;
+            margin-top: 0.5rem;
+        }
+        input {
+            width: 95%;
+            margin-top: 1px;
+        }
+        button {
+            margin: 0.5rem 0;
+            /* display: block; */
+        }
+        select {
+            width: 97%;
+            height: 1.3rem;
+        }
+        ul {
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <form>
+        <label for="amount">Enter expense amount</label>
+        <input type="number" id="amount" name="amount" min="1" required/>
+        <label for="desc">Enter description</label>
+        <input type="text" id="desc" name="description" required/>
+        <label for="category">Choose a category</label>
+        <select id="category" name="category" required>
+        <option value="">--from below--</option>
+        <option>Movie</option>
+        <option>Picnic</option>
+        <option>Exhibition</option>
+        <option>Household</option></select>
+        <!-- <label for="password">Enter password</label>
+        <input type="password" id="password" name="password" minlength="6" required><br/> -->
+        <button type="submit">Add Expense</button>
+        <!-- <a href="./login.html">Existing User-Login</a> -->
+    </form>
+    <ul id="expenses"><h2>Expenses</h2></ul>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.0/axios.min.js"></script>
+    <script>
+        const ul = document.getElementById('expenses');
+        document.querySelector('form').onsubmit = async (e) => {
+            try{
+                e.preventDefault();
+
+                if(document.querySelector('#error')){
+                    document.querySelector('#error').remove();
+                }
+
+                const obj = {
+                    amount: e.target.amount.value,
+                    description: e.target.description.value,
+                    category: e.target.category.value
+                };
+                e.target.reset();
+                console.log(obj);
+                const response = await axios.post('http:localhost:3000/expense/addexpense', obj);
+                displayExpenses(response.data);
+            }
+            catch(err){
+                document.querySelector('form').innerHTML = `<p id='error' style='color: red;'>${err}</p>`;
+            }
+        }
+        window.addEventListener('DOMContentLoaded', async () => {
+            try{
+                const response = await axios.get('http:localhost:3000/expense/getexpenses');
+                response.data.forEach(expense => {
+                    displayExpenses(expense);
+                })
+            }
+            catch(err){
+                console.log(err);
+            }
+        })
+        function displayExpenses(obj){
+            ul.innerHTML += `<li id='${obj.id}'>${obj.amount} - ${obj.description} - ${obj.category}
+                <button onclick='deleteExpense(${obj.id})'>Delete Expense</button></li>`;
+        }
+        async function deleteExpense(id){
+            try{
+                await axios.delete(`http:localhost:3000/expense/delete-expense/${id}`);
+                alert('Delete this expense?');
+                document.getElementById(id).remove();
+            }
+            catch(err){
+                console.log(err);
+            }
+        }
+    </script>
+</body>
+</html>

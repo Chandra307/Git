@@ -57,8 +57,8 @@
                 const response = await axios.post('http://localhost:3000/user/login', obj);
                 console.log(response.data, response.data.message);
                 if(response.status === 200){
-                    // window.location.href = '../Login/login.html';
                     alert(response.data.message);
+                    window.location.href = './index.htm';
                 }
             }catch(err){
                 console.log(err);
