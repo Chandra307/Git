@@ -11,11 +11,13 @@ function isInputInvalid(value){
 exports.addExpense = async (req, res, next) => {
     try{
         const {amount, description, category} = req.body;
-        
+        console.log(amount, description, category, 'line 14')
         if(isInputInvalid(amount) || isInputInvalid(description) || isInputInvalid(category)){
             return res.status(400).json('Please fill all input fields!');
         }
-        const expense = await Expense.create({amount, description, category});
+        // const expense = await Expense.create({amount, description, category});
+        console.log(req.user,'user');
+        const expense = await req.user.createExpense({amount, description, category});
         res.json(expense);
     }
     catch(err){
@@ -25,7 +27,8 @@ exports.addExpense = async (req, res, next) => {
 
 exports.getExpenses = async (req, res, next) => {
     try{
-        const expenses = await Expense.findAll();
+        // const expenses = await Expense.findAll();
+        const expenses = await req.user.getExpenses();
         res.json(expenses);
     }
     catch(err){

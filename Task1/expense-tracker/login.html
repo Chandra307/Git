@@ -56,10 +56,14 @@
                 console.log(obj);
                 const response = await axios.post('http://localhost:3000/user/login', obj);
                 console.log(response.data, response.data.message);
-                if(response.status === 200){
-                    alert(response.data.message);
-                    window.location.href = './index.htm';
-                }
+                alert(response.data.message);
+                localStorage.setItem('token', response.data.token);
+                console.log(localStorage.getItem('token'));
+                window.location.href = './index.htm';
+
+                // if(response.status === 200){
+                //     console.log(response, response.data);
+                // }
             }catch(err){
                 console.log(err);
                 document.querySelector('form').innerHTML += `<p id='error' style='color: red;'>${err.response.data}</p>`;

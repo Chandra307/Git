@@ -2,6 +2,12 @@ const User = require('../models/user');
 
 const bcrypt = require('bcryptjs');
 
+const jwt = require('jsonwebtoken');
+
+function generateJWT(id,name){
+    return jwt.sign({userId: id, name: name}, 'secretKey');
+}
+
 function isInputInvalid(value){
     if(!value){
         return true;
@@ -55,7 +61,7 @@ exports.getUser = async (req, res, next) => {
             }
             if(result || password === user.password){
                 console.log(password === user.password, 'result = ', result);
-                return res.json({success: true, message: 'User logged in succesfully!'});
+                return res.json({success: true, message: 'User logged in succesfully!', token: generateJWT(user.id, user.name)});
             }
             else {
                 console.log(result, password, user.password, 'boolean');
