@@ -57,10 +57,10 @@ exports.getUser = async (req, res, next) => {
 
         bcrypt.compare(password, user.password, (err, result) => {
             if(err){
-                throw new Error();
+                throw new Error(err);
             }
-            if(result || password === user.password){
-                console.log(password === user.password, 'result = ', result);
+            if(result){
+                console.log('result = ', result);
                 return res.json({success: true, message: 'User logged in succesfully!', token: generateJWT(user.id, user.name)});
             }
             else {
