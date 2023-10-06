@@ -1,6 +1,7 @@
 const express = require('express');
 
 const app = express();
+const path = require('path');
 
 const sequelize = require('./util/database');
 const bodyParser = require('body-parser');
@@ -27,6 +28,7 @@ app.delete('/expense/delete-expense/:id', access.authenticate, expenseController
 
 app.get('/premium/purchase', access.authenticate, orderController.purchase);
 app.post('/premium/updateStatus', access.authenticate, orderController.update);
+app.get('/premium/leaderboard', expenseController.showLeaderboard);
 
 
 Expense.belongsTo(User, {constraints: true, onDelete: 'CASCADE'});
@@ -37,5 +39,6 @@ User.hasMany(Order);
 
 sequelize.sync()
 // sequelize.sync({force: true})
-.then(_ => app.listen(3000))
+.then(_ => {app.listen(3000);
+})
 .catch(err => console.log({Error: err}));

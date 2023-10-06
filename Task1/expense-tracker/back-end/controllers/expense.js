@@ -1,4 +1,5 @@
 const Expense = require('../models/expense');
+const User = require('../models/user');
 
 function isInputInvalid(value){
     if(!value){
@@ -59,4 +60,33 @@ exports.deleteExpense = async (req, res, next) => {
         console.log(err);
         res.status(404).json(err);
     }
+}
+
+exports.showLeaderboard = async (req, res, next) => {
+    try{
+        // const expenses = await Expense.findAll();
+        const users = await User.findAll();
+        const promises = users.map(async user => {
+            try{                
+                const userExpenses = await user.getExpenses();
+                let totalExpenses = 0;
+                userExpenses.forEach(e => totalExpenses += Number(e.amount));
+                return {user: user.name, totalExpenses};
+            }
+            catch(err){
+                throw new Error(err);
+            }
+        })
+        const data = await Promise.all(promises);
+        console.log(data.sort(comparator), 'this is what we need');
+        res.json(data.sort(comparator));
+    }
+    catch(err){
+        console.log(err);
+        res.json('think again');
+    }
+}
+
+function comparator(a,b){
+    return b.totalExpenses -a.totalExpenses;
 }

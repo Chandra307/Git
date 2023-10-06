@@ -41,9 +41,9 @@
 </head>
 
 <body>
+    <h2 class="premium"
+    style="float: right;color: rgb(249, 114, 99);margin-right: 5rem;margin-top: 0;font-family: arial;"></h2>
     <div>
-        <h2 class="premium"
-            style="float: right;color: rgb(249, 114, 99);margin-right: 5rem;margin-top: 0;font-family: arial;"></h2>
         <form>
             <label for="amount">Enter expense amount</label>
             <input type="number" id="amount" name="amount" min="1" required />
@@ -60,10 +60,13 @@
             <button type="submit">Add Expense</button>
         </form>
         <button id="premium" style="display: none;">Buy Premium</button>
+        <button id="leader" style="display: none;">Show Leaderboard</button>
     </div>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <div id="expenses">
         <h2 style="text-align: center;">Expenses</h2>
+    </div>
+    <div id="leaderboard">Leaderboard
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.0/axios.min.js"></script>
     <script>
@@ -91,12 +94,17 @@
                 document.querySelector('form').innerHTML = `<p id='error' style='color: red;'>${err}</p>`;
             }
         }
+        
         window.addEventListener('DOMContentLoaded', async () => {
             try {
                 const token = localStorage.getItem('token');
                 console.log(token);
                 const response = await axios.get('http://localhost:3000/expense/getexpenses', { headers: { "Authorization": token } });
+                response.data.expenses.forEach(expense => {
+                    displayExpenses(expense);
+                })
                 if (response.data.premium) {
+                    document.querySelector('#leader').removeAttribute('style');
                     document.getElementById('premium').remove();
                     document.querySelector('.premium').textContent = 'Premium User';
                 }
@@ -104,9 +112,6 @@
                     document.getElementById('premium').removeAttribute('style');
                     document.getElementById('premium').style.marginLeft = '1rem';
                 }
-                response.data.expenses.forEach(expense => {
-                    displayExpenses(expense);
-                })
             }
             catch (err) {
                 console.log(err);
@@ -141,12 +146,13 @@
                 rzpl.open();
                 e.preventDefault();
 
-                rzpl.on('payment.failed', async function (response) {
-                    console.log(response, 'failure it is');
+                rzpl.on('payment.failed', async function ({error: {metadata}}) {
+                    console.log(metadata, 'failure it is');
                     try {
                         await axios.post('http://localhost:3000/premium/updateStatus', {
                             status: "failed",
-                            order_id: options.order_id
+                            order_id: options.order_id,
+                            payment_id: metadata.payment_id
                         }, { headers: { "Authorization": token } });
                         alert('Sorry, payment failed!');
                     }
@@ -160,11 +166,25 @@
             }
         }
 
+        document.querySelector('#leader').onclick = async (e) => {
+            try{
+                const response = await axios.get('http://localhost:3000/premium/leaderboard');
+                response.data.forEach(detail => showLeaderboard(detail));
+            }
+            catch(err){
+
+            }
+        }
+        
         function displayExpenses(obj) {
             ul.innerHTML += `<li id='${obj.id}'>${obj.amount} - ${obj.description} - ${obj.category}
                 <button onclick='deleteExpense(${obj.id})'>Delete Expense</button></li>`;
         }
 
+        function showLeaderboard(obj){
+            document.getElementById('leaderboard').innerHTML += `<li id='${obj.user}'>${obj.user} - Total expenses: ${obj.totalExpenses}</li>`;
+        }
+        
         async function deleteExpense(id) {
             try {
 

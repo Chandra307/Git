@@ -33,7 +33,11 @@ exports.addUser = async (req, res, next) => {
                 res.status(201).json(outcome);
             }
             catch(err){
-                console.log(err);
+                console.log(err.name === 'SequelizeUniqueConstraintError');
+                if(err.name === 'SequelizeUniqueConstraintError'){
+                    console.log('eggjatly');
+                    return res.status(403).json('Error: emailId already exists!');
+                }
                 res.status(500).json(err);
             }
         })

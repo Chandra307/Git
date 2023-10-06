@@ -64,7 +64,8 @@
                 // if(response.status === 200){
                 //     console.log(response, response.data);
                 // }
-            }catch(err){
+            }
+            catch(err){
                 console.log(err);
                 document.querySelector('form').innerHTML += `<p id='error' style='color: red;'>${err.response.data}</p>`;
             }
