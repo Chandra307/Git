@@ -32,7 +32,9 @@
             width: 97%;
             height: 1.3rem;
         }
-
+        h2 {
+            text-align: center;
+        }
         div {
             width: fit-content;
             margin: auto;
@@ -64,10 +66,9 @@
     </div>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <div id="expenses">
-        <h2 style="text-align: center;">Expenses</h2>
+        <h2>Expenses</h2>
     </div>
-    <div id="leaderboard">Leaderboard
-    </div>
+    <div id="leaderboard"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.0/axios.min.js"></script>
     <script>
         const ul = document.getElementById('expenses');
@@ -104,7 +105,8 @@
                     displayExpenses(expense);
                 })
                 if (response.data.premium) {
-                    document.querySelector('#leader').removeAttribute('style');
+                    
+                    showLeaderboard();
                     document.getElementById('premium').remove();
                     document.querySelector('.premium').textContent = 'Premium User';
                 }
@@ -135,6 +137,7 @@
 
                             alert('You are a premium user now!');
                             document.getElementById('premium').remove();
+                            showLeaderboard();                        
                             document.querySelector('.premium').textContent = 'Premium User';
                         }
                         catch (err) {
@@ -166,23 +169,29 @@
             }
         }
 
-        document.querySelector('#leader').onclick = async (e) => {
-            try{
-                const response = await axios.get('http://localhost:3000/premium/leaderboard');
-                response.data.forEach(detail => showLeaderboard(detail));
-            }
-            catch(err){
-
-            }
-        }
-        
         function displayExpenses(obj) {
             ul.innerHTML += `<li id='${obj.id}'>${obj.amount} - ${obj.description} - ${obj.category}
                 <button onclick='deleteExpense(${obj.id})'>Delete Expense</button></li>`;
         }
 
         function showLeaderboard(obj){
-            document.getElementById('leaderboard').innerHTML += `<li id='${obj.user}'>${obj.user} - Total expenses: ${obj.totalExpenses}</li>`;
+
+            document.getElementById('leader').removeAttribute('style');
+            document.querySelector('#leader').style.marginLeft = '1rem';
+
+            document.querySelector('#leader').onclick = async (e) => {
+            try{
+                document.getElementById('leaderboard').innerHTML += `<h2 style='font-family: arial;'>Leaderboard</h2>`;
+
+                const response = await axios.get('http://localhost:3000/premium/leaderboard');
+                response.data.forEach(detail => {
+                    document.getElementById('leaderboard').innerHTML += `<li id='${detail.name}' style='font-size: 1.1rem;'>${detail.name} - Total expenses: ${Number(detail.totalExpenses)}</li>`;
+                });
+            }
+            catch(err){
+                console.log(err);
+            }
+        }
         }
         
         async function deleteExpense(id) {

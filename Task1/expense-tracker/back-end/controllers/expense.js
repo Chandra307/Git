@@ -1,5 +1,6 @@
 const Expense = require('../models/expense');
 const User = require('../models/user');
+const sequelize = require('../util/database');
 
 function isInputInvalid(value){
     if(!value){
@@ -64,29 +65,62 @@ exports.deleteExpense = async (req, res, next) => {
 
 exports.showLeaderboard = async (req, res, next) => {
     try{
-        // const expenses = await Expense.findAll();
-        const users = await User.findAll();
-        const promises = users.map(async user => {
-            try{                
-                const userExpenses = await user.getExpenses();
-                let totalExpenses = 0;
-                userExpenses.forEach(e => totalExpenses += Number(e.amount));
-                return {user: user.name, totalExpenses};
-            }
-            catch(err){
-                throw new Error(err);
-            }
+        // const [expenses, users] = await Promise.all( [ Expense.findAll({ attributes: ['userId', [sequelize.fn('sum', sequelize.col('amount')), 'totalExpenses']], group: ['userId']}), User.findAll({attributes: ['id', 'name']}) ] );
+        const users = await User.findAll({
+            attributes: ['id', 'name', [sequelize.fn('sum', sequelize.col('expenses.amount')), 'totalExpenses']],
+            include: [
+                {
+                    model: Expense,
+                    attributes: []
+                }
+            ],
+            group: ['user.id'],
+            order: [['totalExpenses','DESC']]
         })
-        const data = await Promise.all(promises);
-        console.log(data.sort(comparator), 'this is what we need');
-        res.json(data.sort(comparator));
+        // const object = {};
+        // const arr = [];
+
+        // expenses.forEach(expense => {
+
+        //     if(object[expense.userId]){
+        //         object[expense.userId] +=  (expense.amount);
+        //     }
+        //     else {
+        //         object[expense.userId] = (expense.amount);
+        //     }
+        // });
+        // console.log(users, 'new learnings');
+        res.json(users);
+        // users.forEach(user => {
+
+        //     if(object[user.id]){
+        //         arr.push( {user: user.name, totalExpenses: object[user.id]});
+        //     }
+        //     else {
+        //         arr.push( {user: user.name, totalExpenses: 0});
+        //     }
+        // })
+        // console.log(arr, 'this is new too');
+        // console.log(arr.sort((a,b) => b.totalExpenses - a.totalExpenses), 'sorted');
+        // res.json(arr.sort((a,b) => b.totalExpenses - a.totalExpenses));
+        // const users = await User.findAll();
+        // const promises = users.map(async user => {
+        //     try{                
+        //         const userExpenses = await user.getExpenses();
+        //         let totalExpenses = 0;
+        //         userExpenses.forEach(e => totalExpenses += Number(e.amount));
+        //         return {user: user.name, totalExpenses};
+        //     }
+        //     catch(err){
+        //         throw new Error(err);
+        //     }
+        // })
+        // const data = await Promise.all(promises);
+        // console.log(data.sort(comparator), 'this is what we need');
+        // res.json(data.sort(comparator));
     }
     catch(err){
         console.log(err);
         res.json('think again');
     }
-}
-
-function comparator(a,b){
-    return b.totalExpenses -a.totalExpenses;
 }
