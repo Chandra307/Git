@@ -16,6 +16,8 @@ const expenseController = require('./controllers/expense');
 const access = require('./middleware/authorize');
 const orderController = require('./controllers/order');
 
+const passwordRoute = require('./routes/password');
+
 app.use(cors());
 app.use(bodyParser.json({extended: false}));
 
@@ -30,6 +32,7 @@ app.get('/premium/purchase', access.authenticate, orderController.purchase);
 app.post('/premium/updateStatus', access.authenticate, orderController.update);
 app.get('/premium/leaderboard', expenseController.showLeaderboard);
 
+app.use('/password', passwordRoute);
 
 Expense.belongsTo(User, {constraints: true, onDelete: 'CASCADE'});
 User.hasMany(Expense);
