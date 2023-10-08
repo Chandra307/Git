@@ -71,7 +71,10 @@
     <div id="leaderboard"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.0/axios.min.js"></script>
     <script>
+        
         const ul = document.getElementById('expenses');
+        const token = localStorage.getItem('token');
+
         document.querySelector('form').onsubmit = async (e) => {
             try {
                 e.preventDefault();
@@ -87,18 +90,18 @@
                 };
                 e.target.reset();
                 console.log(obj);
-                const token = localStorage.getItem('token');
+                
                 const response = await axios.post('http://localhost:3000/expense/addexpense', obj, { headers: { "Authorization": token } });
                 displayExpenses(response.data);
             }
             catch (err) {
-                document.querySelector('form').innerHTML = `<p id='error' style='color: red;'>${err}</p>`;
+                document.querySelector('form').innerHTML += `<p id='error' style='color: red;'>${err}</p>`;
             }
         }
         
         window.addEventListener('DOMContentLoaded', async () => {
             try {
-                const token = localStorage.getItem('token');
+                
                 console.log(token);
                 const response = await axios.get('http://localhost:3000/expense/getexpenses', { headers: { "Authorization": token } });
                 response.data.expenses.forEach(expense => {
@@ -123,7 +126,7 @@
         document.getElementById('premium').onclick = async (e) => {
             try {
                 // e.preventDefault();
-                const token = localStorage.getItem('token');
+                
                 const response = await axios.get('http://localhost:3000/premium/purchase', { headers: { "Authorization": token } });
                 var options = {
                     "key": response.data.key_id,

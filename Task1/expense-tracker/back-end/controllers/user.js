@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 function generateJWT(id,name){
-    return jwt.sign({userId: id, name: name}, 'secretKey');
+    return jwt.sign({userId: id, name: name}, process.env.JWT_KEY_SECRET);
 }
 
 function isInputInvalid(value){
