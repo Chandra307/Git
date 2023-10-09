@@ -26,9 +26,9 @@ exports.addExpense = async (req, res, next) => {
         const total = Number(req.user.totalExpenses) + Number(amount);
 
         const expense = await req.user.createExpense({ amount, description, category }, { transaction: t });
-        const update = await req.user.update({ totalExpenses: total }, { transaction: t });
+        await req.user.update({ totalExpenses: total }, { transaction: t });
+        const update = await t.commit();
         console.log(update, 'wth');
-        await t.commit();
         res.json(expense);
     }
     catch (err) {

@@ -10,6 +10,7 @@ const cors = require('cors');
 const User = require('./models/user');
 const Expense = require('./models/expense');
 const Order = require('./models/order');
+const ForgotPasswordRequest = require('./models/password');
 
 const userController = require('./controllers/user');
 const expenseController = require('./controllers/expense');
@@ -17,6 +18,7 @@ const access = require('./middleware/authorize');
 const orderController = require('./controllers/order');
 
 const passwordRoute = require('./routes/password');
+const { forgot } = require('./controllers/password');
 
 app.use(cors());
 app.use(bodyParser.json({extended: false}));
@@ -40,8 +42,11 @@ User.hasMany(Expense);
 Order.belongsTo(User, {constraints: true, onDelete: 'CASCADE'});
 User.hasMany(Order);
 
+ForgotPasswordRequest.belongsTo(User, {constraints: true, onDelete: 'CASCADE'});
+User.hasMany(ForgotPasswordRequest);
+
 sequelize.sync()
-// sequelize.sync({force: true})
+// sequelize.sync({jforce: true})
 .then(_ => {app.listen(3000);
 })
 .catch(err => console.log({Error: err}));

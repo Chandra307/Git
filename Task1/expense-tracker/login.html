@@ -73,10 +73,11 @@
         }
 
         document.getElementById('forgot').onclick = () => {
-            document.querySelector('body').innerHTML = `<form id='password'><label for='email'>Enter your registered email</label><input type='email' id='email' name='mailId' required/><button>Submit</button></form>`;
-            document.getElementById('password').onsubmit = async (e) => {
+            document.querySelector('form').innerHTML = `<label for='email'>Enter your registered email</label><input type='email' id='email' name='mailId' required/><button>Submit</button>`;
+            document.querySelector('form').onsubmit = async (e) => {
                 try{
                     e.preventDefault();
+                    console.log( e.target.email, e.target.mailId);
                     const email = e.target.email.value;
                     const response = await axios.post('http://localhost:3000/password/forgotpassword', {email});
                     console.log(response.data);
