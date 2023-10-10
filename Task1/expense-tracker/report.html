@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report</title>
+    <style>
+        div {
+            margin: auto;
+            width: fit-content;
+        }
+        table {
+            margin: 1rem auto;
+            border: 3px solid whitesmoke;
+        }
+        input {
+            border-style: hidden;
+            border-radius: 4rem;
+            padding: 0.4rem;
+            margin-top: 1.5rem;
+            background-color: bisque;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <h2>Day to Day Expenses</h2>
+        <table id="daily">
+            <caption>October 2023</caption>
+            <tr>
+                <th>Date</th>        
+                <th>Description</th>
+                <th>Category</th>
+                <th>Expense</th>
+                <th>Income</th>
+            </tr>
+            <tr>
+                <td>8-10-2023</td>
+                <td>Tickets</td>
+                <td>Movie</td>
+                <td>nil</td>
+                <td>₹300</td>
+            </tr>
+        </table>
+        <table id="monthly">
+            <caption>Yearly Report</caption>
+            <tr>
+                <th>Month</th>
+                <th>Income</th>
+                <th>Expense</th>
+                <th>Savings</th>
+            </tr>
+            <tr>
+                <td>October</td>
+                <td>₹3000</td>
+                <td>₹300</td>
+                <td>₹2700</td>
+            </tr>
+        </table>
+        <input type="button" style="float: right;" value="Download">
+    </div>
+</body>
+
+</html>
