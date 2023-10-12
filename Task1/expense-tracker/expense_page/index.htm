@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <style>
+        form {
+            width: 18rem;
+            margin: auto;
+            padding: 3rem 1rem 1rem;
+        }
+
+        label {
+            display: block;
+            margin-top: 0.5rem;
+        }
+
+        input {
+            width: 95%;
+            margin-top: 1px;
+        }
+
+        button {
+            margin: 0.5rem 0;
+            /* display: block; */
+        }
+
+        select {
+            width: 97%;
+            height: 1.3rem;
+        }
+        h2 {
+            text-align: center;
+        }
+        div {
+            width: fit-content;
+            margin: auto;
+        }
+        a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h2 class="premium"
+    style="float: right;color: rgb(249, 114, 99);margin-right: 5rem;margin-top: 0;font-family: arial;"></h2>
+    <div>
+        <form>
+            <label for="amount">Enter expense amount</label>
+            <input type="number" id="amount" name="amount" min="1" required />
+            <label for="desc">Enter description</label>
+            <input type="text" id="desc" name="description" required />
+            <label for="category">Choose a category</label>
+            <select id="category" name="category" required>
+                <option value="">--from below--</option>
+                <option>Movie</option>
+                <option>Picnic</option>
+                <option>Exhibition</option>
+                <option>Household</option>
+            </select>
+            <button type="submit">Add Expense</button>
+        </form>
+        <button id="premium" style="display: none;">Buy Premium</button>
+        <!-- <button id="report">Generate Report</button> -->
+        <button id="download">Download file</button>
+        <button id="leader" style="display: none;">Show Leaderboard</button>
+    </div>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <div id="expenses">
+        <h2>Expenses</h2>
+    </div>
+    <div id="leaderboard"></div>
+    <div id="downloads"><h2>Downloads</h2></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.0/axios.min.js"></script>
+    <script src="./index.js"></script>
+</body>
+
+</html>

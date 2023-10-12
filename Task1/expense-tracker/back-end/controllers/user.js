@@ -77,3 +77,19 @@ exports.getUser = async (req, res, next) => {
         res.status(500).json(err);
     }
 }
+
+exports.showLeaderboard = async (req, res, next) => {
+    try {
+        console.log(process.env.JWT_KEY_SECRET, 'environment variables');
+        const users = await User.findAll({
+
+            attributes: ['name', 'totalExpenses'],
+            order: [['totalExpenses', 'DESC']]
+        })
+        res.json(users);
+    }
+    catch (err) {
+        console.log(err);
+        res.json('think again');
+    }
+}

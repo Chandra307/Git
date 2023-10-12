@@ -1,39 +1,30 @@
 const express = require('express');
-
 const app = express();
-const path = require('path');
 
-const sequelize = require('./util/database');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+
+require('dotenv').config();
+
+const sequelize = require('./util/database');
 
 const User = require('./models/user');
 const Expense = require('./models/expense');
 const Order = require('./models/order');
 const ForgotPasswordRequest = require('./models/password');
+const DownloadedFile = require('./models/files');
 
-const userController = require('./controllers/user');
-const expenseController = require('./controllers/expense');
-const access = require('./middleware/authorize');
-const orderController = require('./controllers/order');
-
+const userRoute = require('./routes/user');
+const expenseRoute = require('./routes/expense');
+const premiumRoute = require('./routes/premium');
 const passwordRoute = require('./routes/password');
-const { forgot } = require('./controllers/password');
 
 app.use(cors());
-app.use(bodyParser.json({extended: false}));
+app.use(bodyParser.json());
 
-app.post('/user/signup', userController.addUser);
-app.post('/user/login', userController.getUser);
-
-app.post('/expense/addexpense', access.authenticate, expenseController.addExpense);
-app.get('/expense/getexpenses', access.authenticate, expenseController.getExpenses);
-app.delete('/expense/delete-expense/:id', access.authenticate, expenseController.deleteExpense);
-
-app.get('/premium/purchase', access.authenticate, orderController.purchase);
-app.post('/premium/updateStatus', access.authenticate, orderController.update);
-app.get('/premium/leaderboard', expenseController.showLeaderboard);
-
+app.use('/user', userRoute);
+app.use('/expense', expenseRoute);
+app.use('/premium', premiumRoute);
 app.use('/password', passwordRoute);
 
 Expense.belongsTo(User, {constraints: true, onDelete: 'CASCADE'});
@@ -45,8 +36,11 @@ User.hasMany(Order);
 ForgotPasswordRequest.belongsTo(User, {constraints: true, onDelete: 'CASCADE'});
 User.hasMany(ForgotPasswordRequest);
 
+DownloadedFile.belongsTo(User, { constraints: true, onDelete: 'CASCADE'});
+User.hasMany(DownloadedFile);
+
 sequelize.sync()
-// sequelize.sync({jforce: true})
+// sequelize.sync({force: true})
 .then(_ => {app.listen(3000);
 })
 .catch(err => console.log({Error: err}));
