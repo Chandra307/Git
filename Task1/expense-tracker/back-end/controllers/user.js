@@ -4,37 +4,37 @@ const bcrypt = require('bcryptjs');
 
 const jwt = require('jsonwebtoken');
 
-function generateJWT(id,name){
-    return jwt.sign({userId: id, name: name}, process.env.JWT_KEY_SECRET);
+function generateJWT(id, name) {
+    return jwt.sign({ userId: id, name: name }, process.env.JWT_KEY_SECRET);
 }
 
-function isInputInvalid(value){
-    if(!value){
+function isInputInvalid(value) {
+    if (!value) {
         return true;
-    }else {
+    } else {
         return false;
     }
 }
 
 exports.addUser = async (req, res, next) => {
-    try{
-        let {name, email, phone, password} = req.body;
+    try {
+        let { name, email, phone, password } = req.body;
 
-        if(isInputInvalid(name) || isInputInvalid(email) || isInputInvalid(phone) || isInputInvalid(password)){
+        if (isInputInvalid(name) || isInputInvalid(email) || isInputInvalid(phone) || isInputInvalid(password)) {
             return res.status(400).json('Error: Make sure you fill all input fields!');
         }
 
         const saltrounds = 10;
         bcrypt.hash(password, saltrounds, async (err, hash) => {
-            try{
+            try {
                 console.log(err);
-                password = hash;        
-                const outcome = await User.create( {name, email, phone, password} );          
+                password = hash;
+                const outcome = await User.create({ name, email, phone, password });
                 res.status(201).json(outcome);
             }
-            catch(err){
+            catch (err) {
                 console.log(err.name === 'SequelizeUniqueConstraintError');
-                if(err.name === 'SequelizeUniqueConstraintError'){
+                if (err.name === 'SequelizeUniqueConstraintError') {
                     console.log('eggjatly');
                     return res.status(403).json('Error: emailId already exists!');
                 }
@@ -42,30 +42,30 @@ exports.addUser = async (req, res, next) => {
             }
         })
     }
-    catch(err){
+    catch (err) {
         res.status(403).json(err);
     }
 }
 
 exports.getUser = async (req, res, next) => {
-    try{
-        const {email, password} = req.body;
+    try {
+        const { email, password } = req.body;
 
-        if(isInputInvalid(email) || isInputInvalid(password)){
+        if (isInputInvalid(email) || isInputInvalid(password)) {
             return res.status(400).json('Please make sure you fill all the input fields!');
         }
-        const user = await User.findOne({where: {email: email}});
-        if(!user){
+        const user = await User.findOne({ where: { email: email } });
+        if (!user) {
             return res.status(404).json(`User doesn't exist!`);
         }
 
         bcrypt.compare(password, user.password, (err, result) => {
-            if(err){
+            if (err) {
                 throw new Error(err);
             }
-            if(result){
+            if (result) {
                 console.log('result = ', result);
-                return res.json({success: true, message: 'User logged in succesfully!', token: generateJWT(user.id, user.name)});
+                return res.json({ success: true, message: 'User logged in succesfully!', token: generateJWT(user.id, user.name) });
             }
             else {
                 console.log(result, password, user.password, 'boolean');
@@ -73,7 +73,7 @@ exports.getUser = async (req, res, next) => {
             }
         })
     }
-    catch(err){
+    catch (err) {
         res.status(500).json(err);
     }
 }
@@ -91,5 +91,15 @@ exports.showLeaderboard = async (req, res, next) => {
     catch (err) {
         console.log(err);
         res.json('think again');
+    }
+}
+
+exports.getDownloads = async (req, res, next) => {
+    try {
+        const files = await req.user.getDownloadedFiles();
+        res.json({files, premium: req.user.isPremiumUser});
+    }
+    catch (err) {
+        res.status(500).json(err);
     }
 }

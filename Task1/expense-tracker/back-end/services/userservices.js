@@ -1,6 +1,8 @@
-exports.getExpenses = (req) => req.user.getExpenses();
+const getExpenses = (req, where) => req.user.getExpenses(where);
 
-exports.createDownloadedFile = (req, fileUrl) => {
-    console.log(req.user);
-    req.user.createDownloadedFile({fileUrl});
+const saveFileUrl = (req, fileUrl) => req.user.createDownloadedFile({fileUrl});
+
+module.exports = {
+    getExpenses,
+    saveFileUrl
 }

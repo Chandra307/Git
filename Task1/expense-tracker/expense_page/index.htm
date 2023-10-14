@@ -42,6 +42,16 @@
         a {
             text-decoration: none;
         }
+        #download {
+            width: fit-content;
+        }
+        #pages button {
+            margin-right: 3px;
+            transition: height 0.1s;
+        }
+        #pages button.active {
+            height: 2rem;
+        }
     </style>
 </head>
 
@@ -66,13 +76,12 @@
         </form>
         <button id="premium" style="display: none;">Buy Premium</button>
         <!-- <button id="report">Generate Report</button> -->
-        <button id="download">Download file</button>
+        <input type="button" id="download" value="Download file" title="Premium feature" disabled/>
         <button id="leader" style="display: none;">Show Leaderboard</button>
     </div>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <div id="expenses">
-        <h2>Expenses</h2>
-    </div>
+    <div id="expenses"></div>
+    <div id="pages"></div>
     <div id="leaderboard"></div>
     <div id="downloads"><h2>Downloads</h2></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.0/axios.min.js"></script>

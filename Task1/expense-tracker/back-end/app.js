@@ -33,11 +33,11 @@ User.hasMany(Expense);
 Order.belongsTo(User, {constraints: true, onDelete: 'CASCADE'});
 User.hasMany(Order);
 
-ForgotPasswordRequest.belongsTo(User, {constraints: true, onDelete: 'CASCADE'});
-User.hasMany(ForgotPasswordRequest);
-
 DownloadedFile.belongsTo(User, { constraints: true, onDelete: 'CASCADE'});
 User.hasMany(DownloadedFile);
+
+ForgotPasswordRequest.belongsTo(User, {constraints: true, onDelete: 'CASCADE'});
+User.hasMany(ForgotPasswordRequest);
 
 sequelize.sync()
 // sequelize.sync({force: true})

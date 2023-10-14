@@ -1,4 +1,4 @@
-const DownloadedFile = require('../models/files');
+const Expense = require('../models/expense');
 
 const UserServices = require('../services/userservices');
 
@@ -39,13 +39,28 @@ exports.addExpense = async (req, res, next) => {
 
 exports.getExpenses = async (req, res, next) => {
     try {
-        const promise1 = UserServices.getExpenses(req);
-        // const promise2 = req.user.getDownloadedFiles();
-        const promise2 = DownloadedFile.findAll( { where: {userId: req.user.id}} );
+        const currentPage = req.query.page;
+        const total = await Expense.count({ where: { userId: req.user.id } });
+        const hasNextPage = (currentPage * 5) < total;
+        console.log(hasNextPage, '!?', currentPage * 5, typeof (currentPage));
+        const nextPage = Number(currentPage) + Number(hasNextPage);
+        const pageData = {
+            currentPage,
+            lastPage: Math.ceil(total/5),
+            hasNextPage,
+            previousPage: currentPage - 1,
+            nextPage
+        }
+        const promise1 = req.user.getExpenses({ offset: (currentPage - 1) * 5, limit: 5});
+        const promise2 = req.user.getDownloadedFiles();
         const [expenses, files] = await Promise.all([promise1, promise2]);
         console.log('check for premiumUser', req.user.isPremiumUser, req.user.isPremiumUser === true);
-
-        res.json({ expenses, premium: req.user.isPremiumUser, files });
+        // if(currentPage == 1){
+            res.json({ expenses, pageData });            
+        // }
+        // else {
+            // res.json(expenses, pageData);
+        // }
     }
     catch (err) {
         console.log(err, 'in get expenses');
@@ -62,7 +77,7 @@ exports.deleteExpense = async (req, res, next) => {
             return res.status(400).json('Something went wrong!');
         }
 
-        const expenses = await req.user.getExpenses({ where: { id: expenseId } });
+        const expenses = await UserServices.getExpenses(req, { where: { id: expenseId } });
         if (expenses.length) {
             await expenses[0].destroy({ transaction: t });
             const updatedTotal = Number(req.user.totalExpenses) - Number(expenses[0].amount);
@@ -85,15 +100,10 @@ exports.downloadExpense = async (req, res, next) => {
     try {
         const expenses = await UserServices.getExpenses(req);
         const data = JSON.stringify(expenses);
-        console.log(data,'stringified');
         const fileName = `Expenses/${req.user.id}/${new Date().toString()}.txt`;
         const fileUrl = await S3Service.uploadtoS3(data, fileName);
-        console.log(fileUrl);
-        const record = await DownloadedFile.create({
-            fileUrl: fileUrl.Location,
-            userId: req.user.id
-        });
-        console.log(record, 'created');
+        console.log(fileUrl, 's3response');
+        await UserServices.saveFileUrl(req, fileUrl.Location);
         res.json(fileUrl.Location);
     }
     catch (err) {

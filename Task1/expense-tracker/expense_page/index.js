@@ -1,5 +1,34 @@
 const ul = document.getElementById('expenses');
 const token = localStorage.getItem('token');
+const pages = document.getElementById('pages');
+
+async function sendGetRequest(page){
+    try {
+        const {data: {expenses, pageData}} = await axios.get(`http://localhost:3000/expense/getexpenses?page=${page}`, { headers: { "Authorization": token } });
+        console.log(expenses, pageData);
+        ul.innerHTML = `<h2>Expenses</h2>`;
+        expenses.forEach(expense => {
+            displayExpenses(expense);
+        });
+        pages.innerHTML = '';
+
+        if(+pageData.previousPage > 0){
+            console.log(pageData.previousPage, 'type-', typeof (pageData.previousPage), 'typeof', typeof(+pageData.previousPage));
+            if(+pageData.previousPage > 1){
+                pages.innerHTML = `<button id='page1' onclick='sendGetRequest(1)'>1</button>`;
+            }
+            pages.innerHTML += `<button id='page${pageData.previousPage}' onclick='sendGetRequest(${pageData.previousPage})'>${pageData.previousPage}</button>`;
+        }
+        pages.innerHTML += `<button id='page${pageData.currentPage}' onclick='sendGetRequest(${pageData.currentPage})'>${pageData.currentPage}</button>`;
+        document.getElementById(`page${page}`).className = 'active';
+        if(pageData.hasNextPage){
+            pages.innerHTML += `<button id='page${pageData.nextPage}' onclick='sendGetRequest(${pageData.nextPage})'>${pageData.nextPage}</button>`
+        }
+    }
+    catch (err) {
+        console.log(err);
+    }
+}
 
 document.querySelector('form').onsubmit = async (e) => {
     try {
@@ -29,26 +58,34 @@ window.addEventListener('DOMContentLoaded', async () => {
     try {
 
         console.log(token);
-        const {data} = await axios.get('http://localhost:3000/expense/getexpenses', { headers: { "Authorization": token } });
-        data.expenses.forEach(expense => {
-            displayExpenses(expense);
-        })
-        if (data.premium) {
+        const page = 1;
+        sendGetRequest(page);
+        // const {data: {expenses, pageData}} = await axios.get(`http://localhost:3000/expense/getexpenses?page=${page}`, { headers: { "Authorization": token } });
+        // console.log(expenses, pageData);
+        // expenses.forEach(expense => {
+        //     displayExpenses(expense);
+        // })
+        const {data: {files, premium}} = await axios.get('http://localhost:3000/user/downloads', { headers: { "Authorization": token } });
+        if (premium) {
             
             showLeaderboard();
             document.getElementById('premium').remove();
             document.querySelector('.premium').textContent = 'Premium User';
+            document.getElementById('download').removeAttribute('disabled');            
+            document.getElementById('download').removeAttribute('title');
         }
         else {
             document.getElementById('premium').removeAttribute('style');
             document.getElementById('premium').style.marginLeft = '1rem';
+            
         }
-        if(data.files.length){
+        // document.getElementById('pages').innerHTML += `<button onclick='sendRequest(${pageData.})>`
+        if(files.length){
 
-            data.files.forEach(file => {
+            files.forEach(file => {
                 document.querySelector('#downloads').innerHTML += `<li><a href='${file.fileUrl}'>${new Date(file.createdAt).toLocaleString()}</a></li>`;               
             })
-        }
+        }        
     }
     catch (err) {
         console.log(err);
@@ -109,6 +146,7 @@ document.getElementById('premium').onclick = async (e) => {
 }
 
 function displayExpenses(obj) {
+    
     ul.innerHTML += `<li id='${obj.id}'>₹${obj.amount} - ${obj.description} - ${obj.category}
                 <button onclick='deleteExpense(${obj.id})'>Delete Expense</button></li>`;    
 }
@@ -160,7 +198,7 @@ async function deleteExpense(id) {
 
 document.getElementById('download').onclick = async () => {
     try {
-        const { data } = await axios.get('http://localhost:3000/user/download', { headers: { "Authorization": token } });
+        const { data } = await axios.get('http://localhost:3000/user/downloadfile', { headers: { "Authorization": token } });
         console.log(data);
         const a = document.createElement('a');
         a.href = data;
