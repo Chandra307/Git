@@ -1,26 +1,39 @@
 const ul = document.getElementById('expenses');
 const token = localStorage.getItem('token');
 const pages = document.getElementById('pages');
+const select = document.getElementById('per-page');
+
+select.oninput = () => {
+    localStorage.setItem("number", select.value);
+    console.log(select.value, localStorage.getItem('number'));
+}
 
 async function sendGetRequest(page){
     try {
-        const {data: {expenses, pageData}} = await axios.get(`http://localhost:3000/expense/getexpenses?page=${page}`, { headers: { "Authorization": token } });
-        console.log(expenses, pageData);
+        
+        let number = 5;
+        if(localStorage.getItem('number')){
+            number = localStorage.getItem('number');
+        }
+        const {data: {expenses, pageData}} = await axios.get(`http://localhost:3000/expense/getexpenses?page=${page}&number=${number}`, { headers: { "Authorization": token } });
+
         ul.innerHTML = `<h2>Expenses</h2>`;
         expenses.forEach(expense => {
             displayExpenses(expense);
         });
-        pages.innerHTML = '';
 
-        if(+pageData.previousPage > 0){
-            console.log(pageData.previousPage, 'type-', typeof (pageData.previousPage), 'typeof', typeof(+pageData.previousPage));
+        pages.innerHTML = '';
+        if(pageData.previousPage > 0){
+
             if(+pageData.previousPage > 1){
                 pages.innerHTML = `<button id='page1' onclick='sendGetRequest(1)'>1</button>`;
             }
             pages.innerHTML += `<button id='page${pageData.previousPage}' onclick='sendGetRequest(${pageData.previousPage})'>${pageData.previousPage}</button>`;
-        }
+        }        
+        
         pages.innerHTML += `<button id='page${pageData.currentPage}' onclick='sendGetRequest(${pageData.currentPage})'>${pageData.currentPage}</button>`;
         document.getElementById(`page${page}`).className = 'active';
+
         if(pageData.hasNextPage){
             pages.innerHTML += `<button id='page${pageData.nextPage}' onclick='sendGetRequest(${pageData.nextPage})'>${pageData.nextPage}</button>`
         }
@@ -60,11 +73,11 @@ window.addEventListener('DOMContentLoaded', async () => {
         console.log(token);
         const page = 1;
         sendGetRequest(page);
-        // const {data: {expenses, pageData}} = await axios.get(`http://localhost:3000/expense/getexpenses?page=${page}`, { headers: { "Authorization": token } });
-        // console.log(expenses, pageData);
-        // expenses.forEach(expense => {
-        //     displayExpenses(expense);
-        // })
+        
+        if(localStorage.getItem('number')){
+            select.value = localStorage.getItem('number');
+        }
+        
         const {data: {files, premium}} = await axios.get('http://localhost:3000/user/downloads', { headers: { "Authorization": token } });
         if (premium) {
             
@@ -79,7 +92,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('premium').style.marginLeft = '1rem';
             
         }
-        // document.getElementById('pages').innerHTML += `<button onclick='sendRequest(${pageData.})>`
+
         if(files.length){
 
             files.forEach(file => {
@@ -154,7 +167,7 @@ function displayExpenses(obj) {
 function showLeaderboard() {
 
     document.getElementById('leader').removeAttribute('style');
-    // document.querySelector('#leader').style.marginLeft = '1rem';
+
     document.getElementById('download').style.marginLeft = '1rem';
 
     document.querySelector('#leader').onclick = async (e) => {
@@ -191,10 +204,6 @@ async function deleteExpense(id) {
         ul.innerHTML += `<h3 id='error' style='color: red; font-family: sans-serif;'>${err.response.data}</h3>`;
     }
 }
-
-// document.getElementById('report').onclick = ()=>{
-//     window.location.href = '../report.html';
-// }
 
 document.getElementById('download').onclick = async () => {
     try {

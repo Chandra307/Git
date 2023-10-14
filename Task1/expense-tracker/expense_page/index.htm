@@ -13,12 +13,12 @@
             padding: 3rem 1rem 1rem;
         }
 
-        label {
+        form label {
             display: block;
             margin-top: 0.5rem;
         }
 
-        input {
+        form input {
             width: 95%;
             margin-top: 1px;
         }
@@ -28,36 +28,43 @@
             /* display: block; */
         }
 
-        select {
+        form select {
             width: 97%;
             height: 1.3rem;
         }
+
         h2 {
             text-align: center;
         }
+
         div {
             width: fit-content;
             margin: auto;
         }
+
         a {
             text-decoration: none;
         }
-        #download {
+
+        /* #download {
             width: fit-content;
-        }
+        } */
+
         #pages button {
             margin-right: 3px;
             transition: height 0.1s;
         }
+
         #pages button.active {
             height: 2rem;
         }
+        
     </style>
 </head>
 
 <body>
     <h2 class="premium"
-    style="float: right;color: rgb(249, 114, 99);margin-right: 5rem;margin-top: 0;font-family: arial;"></h2>
+        style="float: right;color: rgb(249, 114, 99);margin-right: 5rem;margin-top: 0;font-family: arial;"></h2>
     <div>
         <form>
             <label for="amount">Enter expense amount</label>
@@ -76,14 +83,30 @@
         </form>
         <button id="premium" style="display: none;">Buy Premium</button>
         <!-- <button id="report">Generate Report</button> -->
-        <input type="button" id="download" value="Download file" title="Premium feature" disabled/>
+        <input type="button" id="download" value="Download file" title="Premium feature" disabled />
         <button id="leader" style="display: none;">Show Leaderboard</button>
     </div>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <div id="expenses"></div>
-    <div id="pages"></div>
+    <div>
+        <span>
+            <label for="per-page">Select Expenses per page:</label>
+            <select name="per-page" id="per-page">                
+                <!-- <option value="">--from below--</option> -->
+                <option selected>5</option>
+                <option>10</option>
+                <option>20</option>
+                <option>40</option>
+                <option>50</option>
+                <option>100</option>
+            </select>
+        </span>
+        <div id="pages"></div>
+    </div>
     <div id="leaderboard"></div>
-    <div id="downloads"><h2>Downloads</h2></div>
+    <div id="downloads">
+        <h2>Downloads</h2>
+    </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.0/axios.min.js"></script>
     <script src="./index.js"></script>
 </body>

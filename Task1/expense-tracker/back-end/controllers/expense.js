@@ -39,19 +39,23 @@ exports.addExpense = async (req, res, next) => {
 
 exports.getExpenses = async (req, res, next) => {
     try {
-        const currentPage = req.query.page;
+        let {page, number} = req.query;
+        
+        currentPage = Number(page);
+        number = Number(number);
         const total = await Expense.count({ where: { userId: req.user.id } });
-        const hasNextPage = (currentPage * 5) < total;
-        console.log(hasNextPage, '!?', currentPage * 5, typeof (currentPage));
+        console.log('know the type', number, typeof(number), currentPage, typeof(total));
+        const hasNextPage = (currentPage * number) < total;
+        console.log(hasNextPage, '!?', currentPage * number, typeof (currentPage));
         const nextPage = Number(currentPage) + Number(hasNextPage);
         const pageData = {
             currentPage,
-            lastPage: Math.ceil(total/5),
+            lastPage: Math.ceil(total/number),
             hasNextPage,
             previousPage: currentPage - 1,
             nextPage
         }
-        const promise1 = req.user.getExpenses({ offset: (currentPage - 1) * 5, limit: 5});
+        const promise1 = req.user.getExpenses({ offset: (currentPage - 1) * number, limit: number});
         const promise2 = req.user.getDownloadedFiles();
         const [expenses, files] = await Promise.all([promise1, promise2]);
         console.log('check for premiumUser', req.user.isPremiumUser, req.user.isPremiumUser === true);
