@@ -14,4 +14,9 @@ router.get('/downloadfile', access.authenticate, expenseController.downloadExpen
 
 router.get('/downloads', access.authenticate, userController.getDownloads);
 
+router.get('/dailyReport', access.authenticate, userController.getDailyReport);
+router.get('/monthlyReport', access.authenticate, userController.getMonthlyReport);
+router.get('/weeklyReport', access.authenticate, userController.getWeeklyReport);
+router.get('/annualReport', access.authenticate, userController.getAnnualReport);
+
 module.exports = router;

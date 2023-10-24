@@ -4,6 +4,10 @@ const bcrypt = require('bcryptjs');
 
 const jwt = require('jsonwebtoken');
 
+const { Op, fn, col } = require('sequelize');
+// const sequelize = require('sequelize');
+const Expense = require('../models/expense');
+
 function generateJWT(id, name) {
     return jwt.sign({ userId: id, name: name }, process.env.JWT_KEY_SECRET);
 }
@@ -97,9 +101,113 @@ exports.showLeaderboard = async (req, res, next) => {
 exports.getDownloads = async (req, res, next) => {
     try {
         const files = await req.user.getDownloadedFiles();
-        res.json({files, premium: req.user.isPremiumUser});
+        res.json({ files, premium: req.user.isPremiumUser });
     }
     catch (err) {
+        res.status(500).json(err);
+    }
+}
+
+exports.getDailyReport = async (req, res, next) => {
+    try {
+        let { date } = req.query;
+        console.log(date, typeof (date), 'line 111-user');
+
+        const promise1 = req.user.getExpenses({
+
+            where: { createdAt: { [Op.substring]: `%${date}%` } },
+            attributes: ['amount', 'description', 'category']
+
+        });
+        const promise2 = req.user.getExpenses({
+
+            where: { createdAt: { [Op.substring]: `${date}` } },
+            attributes: [[fn('sum', col('expense.amount')), 'total']]
+
+        })
+        const [expenses, amount] = await Promise.all([promise1, promise2]);
+        res.json({ expenses, amount: amount[0] });
+    }
+    catch (err) {
+        console.log(err);
+        res.status(500).json(err);
+    }
+}
+
+exports.getMonthlyReport = async (req, res, next) => {
+    try {
+        let { month } = req.query;
+        console.log(month, 'valid data');
+
+        const promise1 = req.user.getExpenses({
+
+            where: { createdAt: { [Op.substring]: `${month}%` } },
+            attributes: ['amount', 'description', 'category', 'createdAt']
+
+        });
+        const promise2 = req.user.getExpenses({
+
+            where: { createdAt: { [Op.substring]: `${month}%` } },
+            attributes: [[fn('sum', col('amount')), 'total']]
+
+        })
+        const [expenses, amount] = await Promise.all([promise1, promise2]);
+        res.json({ expenses, amount: amount[0] });
+    }
+    catch (err) {
+        res.status(500).json(err);
+    }
+}
+
+exports.getWeeklyReport = async (req, res, next) => {
+    try {
+        let { start, end } = req.query;
+        start = new Date(start);
+        end = new Date(end);
+        end.setHours(end.getHours() + 24);
+
+        const promise1 = req.user.getExpenses({
+
+            where: { createdAt: { [Op.between]: [start, end] } },
+            attributes: ['amount', 'description', 'category', 'createdAt']
+
+        });
+        const promise2 = req.user.getExpenses({
+
+            where: { createdAt: { [Op.between]: [start, end] } },
+            attributes: [[fn('sum', col('amount')), 'total']]
+
+        })
+        const [expenses, amount] = await Promise.all([promise1, promise2]);
+        res.json({ expenses, amount: amount[0] });
+    }
+    catch (err) {
+        res.status(500).json(err);
+    }
+}
+
+exports.getAnnualReport = async (req, res, next) => {
+    try {
+        const { year } = req.query;
+
+        const promise1 = req.user.getExpenses({
+
+            where: { createdAt: { [Op.startsWith]: `${year}-` } },
+            attributes: [[fn('sum', col('amount')), 'total'], [fn('month', col('createdAt')), 'month']],
+            group: ['month']
+
+        })
+        const promise2 = req.user.getExpenses({
+
+            where: { createdAt: { [Op.startsWith]: `${year}-` } },
+            attributes: [[fn('sum', col('amount')), 'total']]
+
+        })
+        const [expenses, amount] = await Promise.all([promise1, promise2]);
+        res.json({ expenses, amount: amount[0] });
+    }
+    catch (err) {
+        console.log(err, 'while filming');
         res.status(500).json(err);
     }
 }

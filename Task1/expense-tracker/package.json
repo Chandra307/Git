@@ -5,7 +5,8 @@
   "main": "./back-end/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon ./back-end/app.js"
+    "start": "SET API_KEY=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 & SET IAM_USER_KEY=AKIARDGOULI4UKDRUNVN & SET IAM_USER_SECRET=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 & node ./back-end/app.js",
+    "start:dev": "nodemon ./back-end/app.js"
   },
   "author": "Ravi Chandra Kovuri",
   "license": "ISC",
@@ -13,10 +14,13 @@
     "aws-sdk": "^2.1472.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.1",
+    "compression": "^1.7.4",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "helmet": "^7.0.0",
     "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
     "mysql2": "^3.6.1",
     "razorpay": "^2.9.2",
     "sequelize": "^6.33.0",

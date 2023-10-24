@@ -11,6 +11,6 @@ exports.authenticate = async (req, res, next) => {
     }
     catch(err){
         console.log(process.env.JWT_KEY_SECRET,err);
-        res.status(500).json({err});
+        res.status(401).json({err});
     }
 }

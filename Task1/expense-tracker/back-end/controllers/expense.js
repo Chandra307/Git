@@ -39,36 +39,64 @@ exports.addExpense = async (req, res, next) => {
 
 exports.getExpenses = async (req, res, next) => {
     try {
-        let {page, number} = req.query;
-        
-        currentPage = Number(page);
-        number = Number(number);
+        const currentPage = Number(req.query.page);
+        const limit = Number(req.query.number);
         const total = await Expense.count({ where: { userId: req.user.id } });
-        console.log('know the type', number, typeof(number), currentPage, typeof(total));
-        const hasNextPage = (currentPage * number) < total;
-        console.log(hasNextPage, '!?', currentPage * number, typeof (currentPage));
+
+        const hasNextPage = (currentPage * limit) < total;
+        console.log(hasNextPage, '!?', currentPage * limit, typeof (currentPage));
         const nextPage = Number(currentPage) + Number(hasNextPage);
         const pageData = {
             currentPage,
-            lastPage: Math.ceil(total/number),
+            lastPage: Math.ceil(total / limit),
             hasNextPage,
             previousPage: currentPage - 1,
-            nextPage
+            nextPage,
+            limit
         }
-        const promise1 = req.user.getExpenses({ offset: (currentPage - 1) * number, limit: number});
-        const promise2 = req.user.getDownloadedFiles();
-        const [expenses, files] = await Promise.all([promise1, promise2]);
+        const expenses = await req.user.getExpenses({ offset: (currentPage - 1) * limit, limit: limit });
         console.log('check for premiumUser', req.user.isPremiumUser, req.user.isPremiumUser === true);
-        // if(currentPage == 1){
-            res.json({ expenses, pageData });            
-        // }
-        // else {
-            // res.json(expenses, pageData);
-        // }
+        res.json({ expenses, pageData });
     }
     catch (err) {
         console.log(err, 'in get expenses');
         res.status(404).json(err);
+    }
+}
+
+exports.getExpense = async (req, res, next) => {
+    try {
+        const expenseId = req.params.id;
+        const expenseArray = await req.user.getExpenses({ where: { id: expenseId } });
+        res.json({ expense: expenseArray[0] });
+    }
+    catch (err) {
+        res.status(500).json(err);
+    }
+}
+
+exports.updateExpense = async (req, res, next) => {
+    const t = await sequelize.transaction();
+    try {
+        const expenseId = req.params.id;
+        const { amount, description, category } = req.body;
+
+        const expenseArray = await req.user.getExpenses({ where: { id: expenseId } });
+
+        const updatedTotal = Number(req.user.totalExpenses) + Number(amount) - Number(expenseArray[0].amount);
+        expenseArray[0].amount = amount;
+        expenseArray[0].description = description;
+        expenseArray[0].category = category;
+
+        await expenseArray[0].save({ transaction: t });
+        await req.user.update({ totalExpenses: updatedTotal }, { transaction: t });
+        await t.commit();
+        res.json('Expense updated successfully');
+    }
+    catch (err) {
+        await t.rollback();
+        console.log(err, 'while updating expense');
+        res.status(500).json(err);
     }
 }
 
@@ -111,7 +139,7 @@ exports.downloadExpense = async (req, res, next) => {
         res.json(fileUrl.Location);
     }
     catch (err) {
-        console.log(err,'while upload');
+        console.log(err, 'while upload');
         res.status(500).json(err);
     }
 }
