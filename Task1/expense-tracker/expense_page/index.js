@@ -189,9 +189,9 @@ function displayExpenses(obj, index, limit, page) {
         number = ((page - 1) * limit) + index + 1;
     }
     ul.innerHTML += `<li id='${obj.id}' class='list-group-item'><div>${number}. ₹${obj.amount} - ${obj.description} - ${obj.category}</div>
-                    <button class='btn btn-danger' onclick='deleteExpense(${obj.id})' title='Delete'>
+                    <button class='btn btn-outline-danger' onclick='deleteExpense(${obj.id})' title='Delete'>
                     <span class='del-icon'>X</span></button>
-                    <button class='btn btn-success' onclick='editExpense(${obj.id})' title='Edit'>
+                    <button class='btn btn-outline-success' onclick='editExpense(${obj.id})' title='Edit'>
                     <span class='glyphicon'>&#x270f;</span></button></li>`;
 }
 

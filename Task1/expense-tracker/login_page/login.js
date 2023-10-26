@@ -1,3 +1,6 @@
+const passwordInput = document.querySelector("#password");
+const eye = document.querySelector("#eye");
+
 document.querySelector('form').onsubmit = async (e) => {
     try {
         e.preventDefault();
@@ -44,4 +47,10 @@ document.getElementById('forgot').onclick = () => {
             console.log(err);
         }
     }
+}
+eye.onclick = (e) => {
+    console.log(this, e.target);
+    e.target.classList.toggle("fa-eye-slash");
+    const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+    passwordInput.setAttribute("type", type);
 }

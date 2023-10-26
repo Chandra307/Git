@@ -1,9 +1,9 @@
 .navbar {
     min-height: 4rem;
-    background-color: bisque;
+    background-color: #3fa349;
 }
-.navbar .active {
-    color: #ef680e;
+.navbar a:hover, a.active {
+    color: white;
 }
 div {
     margin: auto;
@@ -52,4 +52,6 @@ td[align] {
 }
 a {
     text-decoration: none;
+    color: #d8d4d4;
+    font-family: verdana;
 }

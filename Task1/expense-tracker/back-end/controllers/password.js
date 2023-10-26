@@ -73,7 +73,7 @@ exports.resetPassword = async (req, res, next) => {
 
             request.update({ isActive: false} );
 
-            res.send(`<form action='http://localhost:3000/password/updatepassword'>
+            res.send(`<form>
             Enter new password<br><input type='password' name='newPassword' required/>
             <input type='hidden' name='uuid' value='${uuid}'/><button type='submit'>Submit</button></form>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.0/axios.min.js"></script>

@@ -1,9 +1,14 @@
 .navbar {
     min-height: 3rem;
-    background-color: bisque;
+    background-color: #348a3c;
 }
-.navbar .active {
-    color: #ef680e;
+.navbar a:hover, .navbar a.active {
+    color: white;
+}
+.navbar a {
+    text-decoration: none;
+    color: #d8d4d4;
+    font-family: verdana;
 }
 form {
     width: 18rem;
@@ -59,7 +64,7 @@ a {
     margin-left: 30%;
     width: 40%;
     justify-content: center;
-    border: 1px dotted gray;
+    /* border: 1px dotted gray; */
 }
 #pages button {
     margin-right: 6px;
@@ -69,7 +74,7 @@ a {
     /* font-style: bold; */
     font-weight: bolder;
 }
-.btn-success, .btn-danger {
+.btn-outline-success, .btn-outline-danger {
     line-height: 0.5rem;
     width: min-content;
 }

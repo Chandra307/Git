@@ -5,7 +5,7 @@
   "main": "./back-end/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "SET API_KEY=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 & SET IAM_USER_KEY=AKIARDGOULI4UKDRUNVN & SET IAM_USER_SECRET=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 & node ./back-end/app.js",
+    "start": "node ./back-end/app.js",
     "start:dev": "nodemon ./back-end/app.js"
   },
   "author": "Ravi Chandra Kovuri",
