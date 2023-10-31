@@ -14,7 +14,7 @@ document.querySelector('form').onsubmit = async (e) => {
         };
         e.target.reset();
         console.log(obj);
-        const response = await axios.post('http://localhost:3000/user/signup', obj);
+        const response = await axios.post('http://51.20.190.185:3000/user/signup', obj);
         if(response.status === 201){
             window.location.href = '../login_page/login.html';
         }
