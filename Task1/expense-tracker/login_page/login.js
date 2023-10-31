@@ -15,12 +15,13 @@ document.querySelector('form').onsubmit = async (e) => {
         };
         e.target.reset();
         console.log(obj);
-        const response = await axios.post('http://localhost:3000/user/login', obj);
+        const response = await axios.post('http://51.20.190.185:3000/user/login', obj);
         console.log(response.data, response.data.message);
         alert(response.data.message);
         localStorage.setItem('token', response.data.token);
         console.log(localStorage.getItem('token'));
         window.location.href = '../expense_page/index.htm';
+        
     }
     catch (err) {
         console.log(err);
@@ -39,7 +40,7 @@ document.getElementById('forgot').onclick = () => {
             e.preventDefault();
             console.log(e.target.email, e.target.mailId);
             const email = e.target.email.value;
-            const response = await axios.post('http://localhost:3000/password/forgotpassword', { email });
+            const response = await axios.post('http://51.20.190.185:3000/password/forgotpassword', { email });
             console.log(response.data);
             e.target.innerHTML += response.data;
         }

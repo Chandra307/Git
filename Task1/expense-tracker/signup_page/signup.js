@@ -21,5 +21,6 @@ document.querySelector('form').onsubmit = async (e) => {
     }catch(err){
         console.log(err);
         document.querySelector('form').innerHTML += `<p id='error' style='color: red;'>${err.response.data}</p>`;
+        
     }
 }

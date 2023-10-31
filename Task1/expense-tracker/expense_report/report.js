@@ -121,6 +121,7 @@ document.getElementById('download').onclick = async () => {
         a.href = data;
         a.download = 'expenses.csv';
         a.click();
+        
     }
     catch (err) {
         console.log(err);

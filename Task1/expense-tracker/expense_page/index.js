@@ -164,7 +164,7 @@ document.getElementById('premium').onclick = async (e) => {
         e.preventDefault();
 
         rzp1.on('payment.failed', async function ({ error: { metadata } }) {
-            console.log(metadata, 'failure it is');
+            // console.log(metadata, 'failure it is');
             try {
                 await axios.post('http://51.20.190.185:3000/premium/updateStatus', {
                     status: "failed",
