@@ -56,7 +56,11 @@ app.use('/premium', premiumRoute);
 app.use('/password', passwordRoute);
 
 app.use((req, res, next) => {
-    res.send('<h2>Sorry, Page not found!</h2>')
+    console.log(req.url, 'print url');
+    res.sendFile(path.join(__dirname, `public/${req.url}`))
+})
+app.use((req, res, next) => {
+    res.send('MAdmax<h2>Sorry, Page not found!</h2>')
 })
 
 sequelize.sync()
