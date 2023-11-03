@@ -65,7 +65,8 @@ document.querySelector('form').onsubmit = async (e) => {
         const expenseDetails = {
             amount: e.target.amount.value,
             description: e.target.description.value,
-            category: e.target.category.value
+            category: e.target.category.value,
+            date: e.target.date.value
         };
         e.target.reset();
 
@@ -90,7 +91,7 @@ document.querySelector('form').onsubmit = async (e) => {
 window.addEventListener('DOMContentLoaded', async () => {
     try {
         if(!token){
-            window.location = '../login_page/login.html';
+            window.location = '../login/login.html';
         }
         console.log(token);
         document.getElementById('error').textContent = '';
@@ -225,7 +226,7 @@ async function deleteExpense(id) {
         if (confirm('Delete this expense?')) {
 
             await axios.delete(`http://13.48.13.12:3000/expense/delete-expense/${id}`, { headers: { "Authorization": token } });
-            document.getElementById(id).remove();
+            document.getElementById(id).remove();        
         }
     }
     catch (err) {
@@ -244,6 +245,7 @@ async function editExpense(id) {
         document.getElementById('amount').value = expense.amount;
         document.getElementById('desc').value = expense.description;
         document.getElementById('category').value = expense.category;
+        document.getElementById('date').value = expense.date;
         document.getElementById('submit').textContent = 'Update Expense';
         putId = id;
     }

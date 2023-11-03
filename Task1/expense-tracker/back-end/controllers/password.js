@@ -52,7 +52,7 @@ exports.forgot = async (req, res, next) => {
             subject: `Confirmation mail to reset password`,
             htmlContent: `<p>Click below to reset password!</p><a href='http://13.48.13.12:3000/password/resetpassword/${uuid}'>RESET PASSWORD</a>`
         });
-
+        
         console.log(result);
         res.send('<p>We have sent a mail to reset your password, please check your inbox!</p>');
 

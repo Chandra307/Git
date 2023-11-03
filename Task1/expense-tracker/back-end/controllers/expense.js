@@ -17,15 +17,15 @@ function isInputInvalid(value) {
 exports.addExpense = async (req, res, next) => {
     const t = await sequelize.transaction();
     try {
-        const { amount, description, category } = req.body;
+        const { amount, description, category, date } = req.body;
 
-        if (isInputInvalid(amount) || isInputInvalid(description) || isInputInvalid(category)) {
+        if (isInputInvalid(amount) || isInputInvalid(description) || isInputInvalid(category) || isInputInvalid(date)) {
             return res.status(400).json('Please fill all input fields!');
         }
 
         const total = Number(req.user.totalExpenses) + Number(amount);
 
-        const expense = await req.user.createExpense({ amount, description, category }, { transaction: t });
+        const expense = await req.user.createExpense({ amount, description, category, date }, { transaction: t });
         await req.user.update({ totalExpenses: total }, { transaction: t });
         await t.commit();
         res.json(expense);
@@ -79,7 +79,7 @@ exports.updateExpense = async (req, res, next) => {
     const t = await sequelize.transaction();
     try {
         const expenseId = req.params.id;
-        const { amount, description, category } = req.body;
+        const { amount, description, category, date } = req.body;
 
         const expenseArray = await req.user.getExpenses({ where: { id: expenseId } });
 
@@ -87,6 +87,7 @@ exports.updateExpense = async (req, res, next) => {
         expenseArray[0].amount = amount;
         expenseArray[0].description = description;
         expenseArray[0].category = category;
+        expenseArray[0].date = date;
 
         await expenseArray[0].save({ transaction: t });
         await req.user.update({ totalExpenses: updatedTotal }, { transaction: t });

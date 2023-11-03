@@ -115,13 +115,13 @@ exports.getDailyReport = async (req, res, next) => {
 
         const promise1 = req.user.getExpenses({
 
-            where: { createdAt: { [Op.substring]: `%${date}%` } },
+            where: { date: date },
             attributes: ['amount', 'description', 'category']
 
         });
         const promise2 = req.user.getExpenses({
 
-            where: { createdAt: { [Op.substring]: `${date}` } },
+            where: { date: date } ,
             attributes: [[fn('sum', col('expense.amount')), 'total']]
 
         })
@@ -141,13 +141,13 @@ exports.getMonthlyReport = async (req, res, next) => {
 
         const promise1 = req.user.getExpenses({
 
-            where: { createdAt: { [Op.substring]: `${month}%` } },
-            attributes: ['amount', 'description', 'category', 'createdAt']
+            where: { date: { [Op.substring]: `${month}%` } },
+            attributes: ['amount', 'description', 'category', 'date']
 
         });
         const promise2 = req.user.getExpenses({
 
-            where: { createdAt: { [Op.substring]: `${month}%` } },
+            where: { date: { [Op.substring]: `${month}%` } },
             attributes: [[fn('sum', col('amount')), 'total']]
 
         })
@@ -164,17 +164,17 @@ exports.getWeeklyReport = async (req, res, next) => {
         let { start, end } = req.query;
         start = new Date(start);
         end = new Date(end);
-        end.setHours(end.getHours() + 24);
+        // end.setHours(end.getHours() + 24);
 
         const promise1 = req.user.getExpenses({
 
-            where: { createdAt: { [Op.between]: [start, end] } },
-            attributes: ['amount', 'description', 'category', 'createdAt']
+            where: { date: { [Op.between]: [start, end] } },
+            attributes: ['amount', 'description', 'category', 'date']
 
         });
         const promise2 = req.user.getExpenses({
 
-            where: { createdAt: { [Op.between]: [start, end] } },
+            where: { date: { [Op.between]: [start, end] } },
             attributes: [[fn('sum', col('amount')), 'total']]
 
         })
@@ -192,14 +192,14 @@ exports.getAnnualReport = async (req, res, next) => {
 
         const promise1 = req.user.getExpenses({
 
-            where: { createdAt: { [Op.startsWith]: `${year}-` } },
-            attributes: [[fn('sum', col('amount')), 'total'], [fn('month', col('createdAt')), 'month']],
+            where: { date: { [Op.startsWith]: `${year}-` } },
+            attributes: [[fn('sum', col('amount')), 'total'], [fn('month', col('date')), 'month']],
             group: ['month']
 
         })
         const promise2 = req.user.getExpenses({
 
-            where: { createdAt: { [Op.startsWith]: `${year}-` } },
+            where: { date: { [Op.startsWith]: `${year}-` } },
             attributes: [[fn('sum', col('amount')), 'total']]
 
         })

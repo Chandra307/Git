@@ -14,7 +14,7 @@
 <body>
     <nav class="navbar">
             <div class="container">
-            <a href="../expense_page/index.htm">Dashboard</a>
+            <a href="../expense/index.htm">Dashboard</a>
             <a href="#" class="active">Report</a>
             <a href="../login/login.html" role="button" onclick="localStorage.removeItem('token')">Logout</a>
         </nav>
@@ -30,13 +30,13 @@
         </select>
         <label>EXPENSES</label><br /><br />
         <!-- <label>Select</label> -->
-        <input type="date" name="date" id="date" style="display: none;" value="2023-10-18" />
+        <input type="date" name="date" id="date" style="display: none;" />
         <span id="week" style="display: none;">
             <input type="date" name="start" id="start" value="" />
             <label>to</label>
             <input type="date" name="end" id="end" value="" />
         </span>
-        <input type="month" name="month" id="month" value="2023-10" />
+        <input type="month" name="month" id="month" />
         <input type="button" id="report" value="View" style="line-height: 1.35rem;" />
         <table id="daily" class="table">
             <tr>
@@ -47,7 +47,7 @@
             </tr>
         </table>
         <label for="year">Search by Year:</label>
-        <input type="number" min="2022" max="2200" name="year" id="year" value="2022">
+        <input type="number" min="1965" max="2200" name="year" id="year" value="2022">
         <table id="annual" class="table">
             <tr>
                 <th>Month</th>

@@ -31,7 +31,7 @@ document.querySelector('#report').onclick = async (e) => {
             document.getElementById('daily').innerHTML = `<tr><th>Date</th><th>Description</th>
             <th>Category</th><th>Expense (in ₹)</th></tr>`;
             expenses.forEach(expense => {
-                document.getElementById('daily').innerHTML += `<tr><th scope='row'>${expense.createdAt.slice(0, 10)}</th>
+                document.getElementById('daily').innerHTML += `<tr><th scope='row'>${expense.date}</th>
                 <td>${expense.description}</td><td>${expense.category}</td>
                 <td align='right' style='padding-right: 4px;'>${expense.amount}.00</td></tr>`;
             })
@@ -46,6 +46,7 @@ document.querySelector('#report').onclick = async (e) => {
             const date = document.getElementById('date').value;
             const { data: { expenses, amount } } = await axios.get(`http://13.48.13.12:3000/user/dailyReport?date=${date}`, { headers: { "Authorization": token } });
             console.log(date, expenses, amount);
+            
             document.getElementById('daily').innerHTML = `<tr><th>#</th><th>Description</th>
             <th>Category</th><th>Expense (in ₹)</th></tr>`;
             expenses.forEach((expense, index) => {
@@ -64,7 +65,7 @@ document.querySelector('#report').onclick = async (e) => {
             document.getElementById('daily').innerHTML = `<tr><th>Date</th><th>Description</th>
             <th>Category</th><th>Expense (in ₹)</th></tr>`;
             expenses.forEach(expense => {
-                document.getElementById('daily').innerHTML += `<tr><th scope='row'>${expense.createdAt.slice(0, 10)}</th>
+                document.getElementById('daily').innerHTML += `<tr><th scope='row'>${expense.date}</th>
                 <td>${expense.description}</td><td>${expense.category}</td>
                 <td align='right'>${expense.amount}.00</td></tr>`;
             })
