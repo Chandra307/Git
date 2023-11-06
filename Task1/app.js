@@ -29,6 +29,7 @@ const myPromise = new Promise((resolve, reject) => {
         resolve('promise fulfilled');
     }, 1000);
 });
+
 myPromise
     .then(r => console.log(r.split('f')))
     .catch(err => console.log(err));

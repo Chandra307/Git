@@ -7,7 +7,6 @@ const textResults: Array<string> = [];
 
 type Numing = number | string;
 type Result = { val: number; timestamp: Date };
-
 interface ResultObj{
     val: number;
     timestamp: Date
