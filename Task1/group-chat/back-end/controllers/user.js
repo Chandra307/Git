@@ -1,5 +1,6 @@
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 function isInputInvalid(string) {
     if (!string) {
@@ -9,7 +10,12 @@ function isInputInvalid(string) {
         return false;
     }
 }
-exports.postUser = async (req, res, next) => {
+function generateJWT(id, name){
+    const payload = { userId: id, userName: name };
+    return jwt.sign(payload, process.env.JWT_KEY_SECRET);
+}
+
+exports.addUser = async (req, res, next) => {
     try {
         let { name, email, phone, password } = req.body;
         if (isInputInvalid(name) || isInputInvalid(phone) || isInputInvalid(email) || isInputInvalid(password)) {
@@ -41,5 +47,41 @@ exports.postUser = async (req, res, next) => {
     catch (err) {
         console.log(err, 'in postUser');
         res.status(400).json(err);
+    }
+}
+
+exports.letUser = async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+        if (isInputInvalid(email) || isInputInvalid(password)) {
+            return res.status(400).json({ message: 'Please fill all the fields!' });
+        }
+        else {
+            const user = await User.findOne({ where: { email: email } });
+            if (!user) {
+                return res.status(404).json({ message: 'User not found, please sign-up!' });
+            }
+            else {
+                bcrypt.compare(password, user.password, (err, result) => {
+                    // try {
+                        if (err) {
+                            console.log(err, 'while bcrypt was comparing');
+                        }
+                        else if (!result) {
+                            return res.status(401).json({ message: 'Password incorrect!' });
+                        }
+                        else {                            
+                            res.status(200).json({ message: 'Log in successful!', token: generateJWT(user.id, user.name) });
+                        }
+                    // }
+                    // catch (err) {
+                    //     console.log(err);
+                    // }
+                })
+            }
+        }
+    }
+    catch (err) {
+        res.status(500).json(err);
     }
 }
