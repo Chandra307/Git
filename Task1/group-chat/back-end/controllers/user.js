@@ -91,7 +91,7 @@ exports.letUser = async (req, res, next) => {
 exports.saveChat = async (req, res, next) => {
     try {
         const { message } = req.body;
-        const result = await req.user.createChat({ message } );
+        const result = await req.user.createChat({ message, sender: req.user.name } );
         res.status(201).json({ message: 'success', result });
 
     }
@@ -102,7 +102,7 @@ exports.saveChat = async (req, res, next) => {
 
 exports.getChats = async (req, res, next) => {
     try {
-        res.status(200).json(await Chat.findAll());
+        res.status(200).json(await Chat.findAll({ attributes: ['sender', 'message'] }));
     }
     catch (err) {
         res.status(500).json({ "message": 'Something went wrong!', "Error": err });
