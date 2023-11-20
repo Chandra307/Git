@@ -11,3 +11,13 @@ sendbtn.onclick = async () => {
         console.log(err);
     }
 }
+
+window.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const { data } = await axios.get('http://localhost:5000/user/chats');
+        console.log(data);
+    }
+    catch (err) {
+        console.log(err);
+    }
+})

@@ -99,3 +99,12 @@ exports.saveChat = async (req, res, next) => {
         res.status(500).json(err);
     }
 }
+
+exports.getChats = async (req, res, next) => {
+    try {
+        res.status(200).json(await Chat.findAll());
+    }
+    catch (err) {
+        res.status(500).json({ "message": 'Something went wrong!', "Error": err });
+    }
+}

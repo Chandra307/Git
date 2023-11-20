@@ -9,4 +9,6 @@ router.post('/login', userController.letUser);
 
 router.post('/chat', middleware.authenticate, userController.saveChat);
 
+router.get('/chats', userController.getChats);
+
 module.exports = router;
