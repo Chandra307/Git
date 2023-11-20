@@ -1,4 +1,6 @@
 const User = require('../models/user');
+const Chat = require('../models/chats');
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -80,6 +82,18 @@ exports.letUser = async (req, res, next) => {
                 })
             }
         }
+    }
+    catch (err) {
+        res.status(500).json(err);
+    }
+}
+
+exports.saveChat = async (req, res, next) => {
+    try {
+        const { message } = req.body;
+        const result = await req.user.createChat({ message } );
+        res.status(201).json({ message: 'success', result });
+
     }
     catch (err) {
         res.status(500).json(err);

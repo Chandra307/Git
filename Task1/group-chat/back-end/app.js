@@ -3,6 +3,9 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 
+const User = require('./models/user');
+const Chat = require('./models/chats');
+
 const sequelize = require('./util/database');
 const userRoute = require('./routes/user');
 
@@ -15,6 +18,9 @@ app.use(cors({
 app.use(express.json());
 app.use(bodyParser.json({ extended: false}));
 app.use('/user', userRoute);
+
+Chat.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
+User.hasMany(Chat);
 
 sequelize.sync()
 // sequelize.sync({ force: true })
