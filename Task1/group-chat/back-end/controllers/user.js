@@ -3,6 +3,7 @@ const Chat = require('../models/chats');
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { Op } = require('sequelize');
 
 function isInputInvalid(string) {
     if (!string) {
@@ -102,9 +103,15 @@ exports.saveChat = async (req, res, next) => {
 
 exports.getChats = async (req, res, next) => {
     try {
-        res.status(200).json(await Chat.findAll({ attributes: ['sender', 'message'] }));
+        let lastId = req.query.id;
+        if (lastId === 'undefined') {
+            lastId = -1;
+        }
+        console.log(lastId);
+        res.status(200).json(await Chat.findAll({ where: { id: { [Op.gt]: lastId } }, attributes: ['id', 'sender', 'message'] }));
     }
     catch (err) {
+        console.log(err, 'in fetching chats');
         res.status(500).json({ "message": 'Something went wrong!', "Error": err });
     }
 }
