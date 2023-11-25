@@ -13,7 +13,7 @@ function isInputInvalid(string) {
         return false;
     }
 }
-function generateJWT(id, name){
+function generateJWT(id, name) {
     const payload = { userId: id, userName: name };
     return jwt.sign(payload, process.env.JWT_KEY_SECRET);
 }
@@ -67,15 +67,15 @@ exports.letUser = async (req, res, next) => {
             else {
                 bcrypt.compare(password, user.password, (err, result) => {
                     // try {
-                        if (err) {
-                            console.log(err, 'while bcrypt was comparing');
-                        }
-                        else if (!result) {
-                            return res.status(401).json({ message: 'Password incorrect!' });
-                        }
-                        else {                            
-                            res.status(200).json({ message: 'Log in successful!', token: generateJWT(user.id, user.name) });
-                        }
+                    if (err) {
+                        console.log(err, 'while bcrypt was comparing');
+                    }
+                    else if (!result) {
+                        return res.status(401).json({ message: 'Password incorrect!' });
+                    }
+                    else {
+                        res.status(200).json({ message: 'Log in successful!', token: generateJWT(user.id, user.name) });
+                    }
                     // }
                     // catch (err) {
                     //     console.log(err);
@@ -92,7 +92,7 @@ exports.letUser = async (req, res, next) => {
 exports.saveChat = async (req, res, next) => {
     try {
         const { message } = req.body;
-        const result = await req.user.createChat({ message, sender: req.user.name } );
+        const result = await req.user.createChat({ message, sender: req.user.name });
         res.status(201).json({ message: 'success', result });
 
     }
@@ -103,15 +103,38 @@ exports.saveChat = async (req, res, next) => {
 
 exports.getChats = async (req, res, next) => {
     try {
+        const totalChats = await Chat.count();
         let lastId = req.query.id;
         if (lastId === 'undefined') {
             lastId = -1;
         }
-        console.log(lastId);
-        res.status(200).json(await Chat.findAll({ where: { id: { [Op.gt]: lastId } }, attributes: ['id', 'sender', 'message'] }));
+        console.log(totalChats, lastId);
+        res.json(
+            {
+                "chats": await Chat.findAll({ where: { id: { [Op.gt]: lastId } }, OFFSET: totalChats - 10, attributes: ['id', 'sender', 'message'] }),
+                "oldChats": totalChats > 10
+            }
+        );
     }
     catch (err) {
         console.log(err, 'in fetching chats');
         res.status(500).json({ "message": 'Something went wrong!', "Error": err });
+    }
+}
+exports.getUsers = async (req, res, next) => {
+    try {
+        res.status(200).json(await User.findAll({ where: { id: { [Op.ne]: req.user.id } } }));
+    }
+    catch (err) {
+        res.status(500).json({ "message": "Something went wrong!", "Error": err });
+    }
+}
+exports.getGroups = async (req, res, next) => {
+    try {
+        const groups = await req.user.getGroups();
+        res.status(200).json({ "message": "success", groups });
+    }
+    catch (err) {
+        res.status(500).json({ "message": "Something went wrong!", "Error": err });
     }
 }

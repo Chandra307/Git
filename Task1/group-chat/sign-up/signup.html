@@ -7,13 +7,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <title>Group</title>
-    <style>        
+    <!-- Option 1: Include in HTML -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+    <title>Group Chat</title>
+    <style>
         @media (min-width: 600px) {
             .form-group input {
                 width: 25vw;
             }
         }
+        .input-group-prepend span {
+            border-top-right-radius: 0px;
+            border-bottom-right-radius: 0px;
+        }
+        /* .input-group input {
+            border-left: none;
+        } */
     </style>
 </head>
 
@@ -23,16 +32,36 @@
         <div class="container d-flex justify-content-center pt-3 pb-2">
             <form>
                 <div class="form-group">
-                    <label for="name" class="mb-1">Enter your name</label>
-                    <input type="text" class="form-control mb-2" id="name" name="name" />
-                    <label for="phone" class="mb-1">Enter your mobile number</label>
-                    <input type="text" class="form-control mb-2" id="phone" name="phone" />
-                    <label for="mail" class="mb-1">Enter your e-mail</label>
-                    <input type="email" class="form-control mb-2" id="mail" name="email" />
-                    <label for="password" class="mb-1">Enter your password</label>
-                    <input type="password" class="form-control mb-2" id="password" name="password" />
+                    <label for="name" class="mb-1">Name</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
+                        </div>
+                        <input type="text" class="form-control mb-2" id="name" name="name" />
+                    </div>
+                    <label for="phone" class="mb-1">Mobile number</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text bg-white"><i class="bi bi-phone"></i></span>                            
+                        </div>
+                        <input type="text" class="form-control mb-2" id="phone" name="phone" />
+                    </div>
+                    <label for="mail" class="mb-1">E-mail</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">                        
+                            <span class="input-group-text bg-white"><i class="bi bi-envelope"></i></span>
+                        </div>
+                        <input type="email" class="form-control mb-2" id="mail" name="email" />
+                    </div>
+                    <label for="password" class="mb-1">Password</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text bg-white"><i class="bi bi-lock"></i></span>
+                        </div>
+                        <input type="password" class="form-control mb-2" id="password" name="password" />
+                    </div>
                     <button type="submit" class="btn btn-outline-primary mt-2">Create Account</button>
-                    <a href="#" class="btn btn-outline-success mt-2">Login</a>
+                    <a href="../login/login.html" class="btn btn-outline-success mt-2">Login</a>
                 </div>
             </form>
         </div>

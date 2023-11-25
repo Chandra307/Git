@@ -5,9 +5,12 @@ require('dotenv').config();
 
 const User = require('./models/user');
 const Chat = require('./models/chats');
+const Group = require('./models/group');
+const Participant = require('./models/participants');
 
 const sequelize = require('./util/database');
-const userRoute = require('./routes/user');
+const userRoutes = require('./routes/user');
+const groupRoutes = require('./routes/group');
 
 const app = express();
 app.use(cors({
@@ -16,11 +19,17 @@ app.use(cors({
     credentials: true,
 }));
 app.use(express.json());
-app.use(bodyParser.json({ extended: false}));
-app.use('/user', userRoute);
 
-Chat.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
-User.hasMany(Chat);
+app.use('/user', userRoutes);
+app.use('/group', groupRoutes);
+
+
+User.belongsToMany(Group, { through: Participant });
+Group.belongsToMany(User, { through: Participant });
+
+Chat.belongsTo(Group);
+Group.hasMany(Chat);
+
 
 sequelize.sync()
 // sequelize.sync({ force: true })
