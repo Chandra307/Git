@@ -3,6 +3,9 @@ const Participant = require('../models/participants');
 const Group = require('../models/group');
 const Chat = require('../models/chats');
 
+// const appExport = require('../app');
+// console.log(appExport, 'to see what"s inside');
+
 exports.knowParticipants = async (req, res, next) => {
     try {
         console.log(req.body);
@@ -10,9 +13,9 @@ exports.knowParticipants = async (req, res, next) => {
         const promises = participants.map(part => User.findOne({ where: { name: part } }));
         // console.log(promises,'array');
         const users = await Promise.all(promises);
-        console.log(users,'another one');
+        console.log(users, 'another one');
         const group = await Group.create({ name, createdBy: req.user.name });
-        const promises2 =  users.map(user => group.addUser(user, { through: { name: user.name, group: group.name } }));
+        const promises2 = users.map(user => group.addUser(user, { through: { name: user.name, group: group.name } }));
         promises2.push(group.addUser(req.user, { through: { name: req.user.name, group: group.name, isAdmin: true } }));
         const details = await Promise.all(promises2);
         res.status(201).json({ "message": 'Group successfully created', details });
@@ -26,7 +29,11 @@ exports.knowParticipants = async (req, res, next) => {
 exports.getChats = async (req, res, next) => {
     try {
         console.log(req.query.id);
-        const group = await Group.findOne({ where: { id: req.query.id } } );
+        const group = await Group.findOne({ where: { id: req.query.id } });
+        const user = await group.getUsers({ where: { id: req.user.id } });
+        if (!user.length) {
+            return res.status(401).json({ "message": "You aren't a participant of this group to view the messages!" })
+        }
         const chats = await group.getChats();
         res.status(200).json({ "message": 'Chats fetched', chats, "group": group.name });
     }
@@ -40,11 +47,15 @@ exports.sendMsg = async (req, res, next) => {
         const { id } = req.query;
         const { message } = req.body;
         const group = await Group.findByPk(id);
-        console.log(message, 'group found');
+        console.log(group.name, 'group found');
+        // const io = require('../app');
+        // // console.log(appExport, 'to see what"s inside');
+        // io.on('connection', socket => socket.to(group.name).emit('sent-msgs', result));
         const result = await group.createChat({ message, sender: req.user.name });
         res.status(201).json({ "message": "Message sent successfully", result });
     }
     catch (err) {
+        console.log('Socket err: ' + err, 'app.js export');
         res.status(500).json({ "message": "Something went wrong!", "Error": err });
     }
 }
@@ -61,7 +72,7 @@ exports.addParticipants = async (req, res, next) => {
         const { participants } = req.body;
         const promises = participants.map(part => User.findOne({ where: { name: part } }));
         const users = await Promise.all(promises);
-        const promises2 =  users.map(user => group.addUser(user, { through: { name: user.name, group: group.name } }));
+        const promises2 = users.map(user => group.addUser(user, { through: { name: user.name, group: group.name } }));
         const details = await Promise.all(promises2);
         res.status(201).json({ "message": 'Success', details });
     }
@@ -96,7 +107,7 @@ exports.removeParticipant = async (req, res, next) => {
         const grpId = req.query.id;
         const group = await Group.findByPk(grpId);
         const [user] = await group.getUsers({ where: { id: req.user.id } });
-        console.log('are you an admin?',user.isAdmin, user.participant.isAdmin);
+        console.log('are you an admin?', user.isAdmin, user.participant.isAdmin);
         if (!user.participant.isAdmin) {
             return res.status(401).json({ "message": "You're not an admin to remove someone from group." });
         }

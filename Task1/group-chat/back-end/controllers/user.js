@@ -132,6 +132,13 @@ exports.getUsers = async (req, res, next) => {
 exports.getGroups = async (req, res, next) => {
     try {
         const groups = await req.user.getGroups();
+        // const io = require('../app');
+        // io.on('connection', socket => {
+        //     groups.forEach(group => socket.join(group.name));
+        //     socket.on('new-msg', (message, group) => {
+        //         socket.to(group).emit('sent-msgs', message);
+        //     })
+        // })
         res.status(200).json({ "message": "success", groups });
     }
     catch (err) {
