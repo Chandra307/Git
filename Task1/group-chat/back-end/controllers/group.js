@@ -2,10 +2,39 @@ const User = require('../models/user');
 const Participant = require('../models/participants');
 const Group = require('../models/group');
 const Chat = require('../models/chats');
+const AWS = require('aws-sdk');
+const fs = require('fs');
+const { group } = require('console');
 
 // const appExport = require('../app');
 // console.log(appExport, 'to see what"s inside');
 
+const uploadToS3 = (data, fileName) => {
+    const bucketName = 'trackexpense';
+
+    const S3 = new AWS.S3(
+        {
+            accessKeyId: process.env.IAM_USER_KEY,
+            secretAccessKey: process.env.IAM_USER_SECRET
+        }
+    )
+    var params = {
+        Bucket: bucketName,
+        Key: fileName,
+        Body: data,
+        ACL: 'public-read'
+    }
+
+    return new Promise((res, rej) => {
+        S3.upload(params, (err, S3response) => {
+            if (err) {
+                rej(err);
+            } else {
+                res(S3response);
+            }        
+        })
+    })
+}
 exports.knowParticipants = async (req, res, next) => {
     try {
         console.log(req.body);
@@ -45,18 +74,59 @@ exports.getChats = async (req, res, next) => {
 exports.sendMsg = async (req, res, next) => {
     try {
         const { id } = req.query;
-        const { message } = req.body;
+        let message = req.body.message;
+        let format = 'text';
+        // let file = req.file;
+
+        // const { message, formData } = req.body;
+        console.log(req.file, 'file sent from frontend', req.body.message);
         const group = await Group.findByPk(id);
         console.log(group.name, 'group found');
-        // const io = require('../app');
-        // // console.log(appExport, 'to see what"s inside');
-        // io.on('connection', socket => socket.to(group.name).emit('sent-msgs', result));
-        const result = await group.createChat({ message, sender: req.user.name });
-        res.status(201).json({ "message": "Message sent successfully", result });
+
+        if (req.file) {
+            const readData = fs.readFileSync(`back-end/Images/${req.file.filename}`)
+            // , async (err, data) => {
+            //     try {
+
+            //         if (err) {
+            //             console.log(err, 'in reading');
+            //         }
+            //         console.log(data, 'read successfully', data.byteLength);
+            //         const S3response = uploadToS3(data, `Images/${req.user.id}/${req.file.filename}`);
+            //         console.log(S3response, 'after upload to cloud');
+            //         message = S3response.Location;
+            //         format = req.file.mimetype;
+                    
+
+            //     }
+            //     catch (err) {
+            //         res.status(500).json(err);
+            //     }
+            // })
+
+            const S3response = await uploadToS3(readData, `Images/${req.user.id}/${req.file.filename}`);
+            console.log(S3response, 'after upload to cloud');
+            message = S3response.Location;
+            format = req.file.mimetype;
+            // console.log(message, format);
+            // res.status(201).json(saveMsg(group, message, req.user.name, format));
+        }
+        console.log(message, format);
+        const result = await group.createChat({ message, sender: req.user.name, format});
+
+        res.status(201).json(result);
     }
     catch (err) {
         console.log('Socket err: ' + err, 'app.js export');
         res.status(500).json({ "message": "Something went wrong!", "Error": err });
+    }
+}
+async function saveMsg(group, message, sender, format) {
+    try {
+        return await group.createChat({ message, sender, format});
+    }catch (err) {
+        console.log(err, 'in saveMsg function');
+        return err;
     }
 }
 

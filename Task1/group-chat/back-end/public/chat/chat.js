@@ -6,21 +6,27 @@ let exisChats = [];
 let lastId = localStorage.getItem('lastId');
 const oldChatsExist = localStorage.getItem('oldChatsExist');
 const form = document.querySelector('form');
+const form2 = document.getElementById('send');
 const userList = document.querySelector('#userList');
+// import FormData from "form-data";
 
 const socket = io();
 socket.on('connect', _ => {
     console.log(`connected with ${socket.id}`)
 });
-socket.on('sent-msgs', (sender, msg) => {
-    console.log(sender + ' : ' + msg);
-    chatBox.innerHTML += `<div class="col-8 mb-1">${sender} : ${msg}`;
+socket.on('sent-msgs', (content) => {
+    console.log(content);
+    if (content.format === 'image/jpeg') {
+        chatBox.innerHTML += `<div class="col-8 my-1">${content.sender}<div class="mt-1 mb-3"><img src="${content.message}" alt="alt" width="300" height="300" class="img-fluid rounded" /></div></div>`;
+    } else {
+        chatBox.innerHTML += `<div class="col-8 my-1">${content.sender} : ${content.message}`;
+    }
 });
 
-function parseJwt (token) {
+function parseJwt(token) {
     var base64Url = token.split('.')[1];
     var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
 
@@ -28,15 +34,30 @@ function parseJwt (token) {
 }
 console.log(parseJwt(token));
 
-async function sendMsg(grpId) {
+async function sendMsg(grpId, e) {
     try {
         const message = document.querySelector('#comment').value;
-        // console.log(message);
-        const { data: { result } } = await axios.post(`http://localhost:5000/group/newMsg?id=${grpId}`, { message }, { headers: { "Authorization": token } });
+        const files = document.getElementById('file').files;
+        const formData = new FormData();
+
+        formData.set('file', files[0]);
+        formData.set('message', message);
+        const headers = {
+            headers: {
+                "Authorization": token,
+                "Content-Type": "multipart/form-data"
+            }
+        };
+        const { data } = await axios.post(`http://localhost:5000/group/newMsg?id=${grpId}`, formData, headers);
         document.querySelector('#comment').value = '';
-        console.log(result);
-        socket.emit('new-msg', result.message, result.groupId, result.sender);
-        chatBox.innerHTML += `<div class="col-8 mb-1">You : ${result.message}`;       
+        document.getElementById('file').value = '';
+        console.log(data);
+        socket.emit('new-msg', data);
+        let HTMLContent = `<div class="col-8 my-1">You : ${data.message}`;
+        if (data.format === 'image/jpeg') {
+            HTMLContent = `<div class="col-8 my-1">You<div class="mt-1 mb-3"><img src="${data.message}" alt="alt" width="300" height="300" class="img-fluid rounded" /></div></div>`;
+        }
+        chatBox.innerHTML += HTMLContent;
     }
     catch (err) {
         console.log(err);
@@ -108,14 +129,23 @@ async function fetchChats(groupId, e) {
         let sender = parseJwt(token).userName;
         console.log(sender);
         chats.forEach(chat => {
+            let user = chat.sender;
             if (chat.sender === sender) {
-                chatBox.innerHTML += `<div class="col-8 mb-1">You : ${chat.message}`;                
-            }else {
-                chatBox.innerHTML += `<div class="col-8 mb-1">${chat.sender} : ${chat.message}`;
+                user = 'You';
             }
+            let HTMLContent = `<div class="col-8 my-1">${user} : ${chat.message}</div>`;
+            if (chat.format === 'image/jpeg') {
+                HTMLContent = `<div class='col-8 my-1'>${user}<div class="mt-1 mb-3"><img src="${chat.message}" alt="alt" width="300" height="300" class="img-fluid rounded" /></div></div>`;
+            }
+            console.log(user);
+            console.log(HTMLContent);
+            chatBox.innerHTML += HTMLContent;
+            // else {
+            //     chatBox.innerHTML += `<div class="col-8 mb-1">${chat.sender} : ${chat.message}`;
+            // }
             exisChats.push(chat);
         });
-        sendbtn.setAttribute('onclick', `sendMsg(${groupId})`);
+        sendbtn.setAttribute('onclick', `sendMsg(${groupId}, event)`);
 
 
         // localStorage.setItem('chats', JSON.stringify(exisChats));
@@ -137,7 +167,7 @@ function displayChats(chats, oldChatsExist) {
     exisChats = JSON.parse(chats);
     console.log(exisChats);
     exisChats.forEach(chat => {
-        chatBox.innerHTML += `<div class="col-8 mb-1">${chat.sender} : ${chat.message}`;
+        chatBox.innerHTML += `<div class="col-8 my-1">${chat.sender} : ${chat.message}`;
     });
 }
 
@@ -186,7 +216,7 @@ form.onsubmit = async (e) => {
             const { data } = await axios.post('http://localhost:5000/group/participants', groupDetails, { headers: { "Authorization": token } });
             console.log(data);
             document.querySelector('.group').classList.toggle('d-none');
-            
+
             document.querySelector('.chatList').classList.toggle('d-none');
             fetchGrpList();
 

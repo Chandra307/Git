@@ -56,8 +56,11 @@
         <label for="room">Room</label>
         <input type="text" id="room" />
         <button type="button" id="join-button">Join</button>
+        <br>
+        <label for="file">Choose file</label>
+        <input type="file" id="file" name="file" />
     </form>
-    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
+    <!-- <script src="http://localhost:5000/socket.io/socket.io.js"></script> -->
     <script>
         // "use strict";
         // const math = {
@@ -91,8 +94,8 @@
         // normal();
         // first(3, 4);
         // arrow();
-        const socket = io('http://localhost:5000');
-        const userSocket = io('http://localhost:5000/user', { auth: { token: "Test" } });
+        // const socket = io('http://localhost:5000');
+        // const userSocket = io('http://localhost:5000/user', { auth: { token: "Test" } });
 
 
         const messageContainer = document.getElementById('message-container')
@@ -102,21 +105,21 @@
 
         // const name = prompt('What is your name?')
         // socket.emit('new-user', name)
-        socket.on('connect', () => appendMessage(`Your connection id is ${socket.id}`));
+        // socket.on('connect', () => appendMessage(`Your connection id is ${socket.id}`));
 
-        userSocket.on('connect_error', error => appendMessage(error))
+        // userSocket.on('connect_error', error => appendMessage(error))
         // let count = 0;
         // setInterval(() => {
         //     count++;
         //     socket.emit('ping', count);
         // }, 1000);
 
-        document.onkeydown = (e) => {
-            console.log(90);
-            if (e.target.matches('input')) return;
-            if (e.key === 'c') socket.connect();
-            if (e.key === 'd') socket.disconnect();
-        }
+        // document.onkeydown = (e) => {
+        //     console.log(90);
+        //     if (e.target.matches('input')) return;
+        //     if (e.key === 'c') socket.connect();
+        //     if (e.key === 'd') socket.disconnect();
+        // }
         // socket.on('chat-message', data => {
         //     appendMessage(`${data.name}: ${data.message}`)
         // })
@@ -124,20 +127,22 @@
         // socket.on('user-connected', name => {
         //     appendMessage(`${name} connected`)
         // })
-        socket.on('roger', message => appendMessage(message));
+        // socket.on('roger', message => appendMessage(message));
 
-        socket.on('user-disconnected', name => {
-            appendMessage(`${name} disconnected`)
-        })
+        // socket.on('user-disconnected', name => {
+        //     appendMessage(`${name} disconnected`)
+        // })
 
         messageForm.addEventListener('submit', e => {
-            e.preventDefault()
+            e.preventDefault();
+            const fileChosen = e.target.file.value;
             const message = messageInput.value;
             const room = document.getElementById('room').value;
+            console.log(message, fileChosen);
             appendMessage(`You: ${message}`)
-            socket.emit('send-message', message, room, () => {
-                messageContainer.lastElementChild.innerHTML += `<span style='margin-left: 2vw;'>Sent</span>`;
-            });
+            // socket.emit('send-message', message, room, () => {
+            //     messageContainer.lastElementChild.innerHTML += `<span style='margin-left: 2vw;'>Sent</span>`;
+            // });
             messageInput.value = ''
         })
         join.onclick = () => {

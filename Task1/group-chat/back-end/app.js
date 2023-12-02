@@ -90,9 +90,9 @@ io.on('connection', socket => {
         console.log(group, 'the user joins this group');
         socket.join(group);
     });
-    socket.on('new-msg', (message, group, sender) => {
-        console.log(message, group, 'these msgs were newer');
-        socket.to(group).emit('sent-msgs', sender, message);
+    socket.on('new-msg', (content) => {
+        console.log(content, content.groupId, 'these msgs were newer');
+        socket.to(content.groupId).emit('sent-msgs', content);
     })
 })
 

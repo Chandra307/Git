@@ -85,11 +85,14 @@
                 <div class="col-8 bg-secondary text-light">Jimmy: Oh!</div>
                 <div class="col-8">Anderson: Yeah!</div>
             </div>
-            <div class="send fixed-bottom bg-info rounded-top py-2 align-items-center">
+            <div class="send bg-info rounded-top py-2 align-items-center">
                 <!-- <div class="form-row"> -->
                 <div>
-                    <input type="text" name="comment" id="comment" placeholder="type here">
-                    <button class="mx-0.5" id="sendMsg">Send</button>
+                    <!-- <form id="send" action="/group/newMsg?id=" method="post" enctype="multipart/form-data"> -->
+                        <input type="text" name="comment" id="comment" placeholder="type here" />
+                        <input type="file" name="file" id="file" accept=".jpg, .png" />
+                        <button class="mx-0.5" id="sendMsg" type="submit">Send</button>
+                    <!-- </form> -->
                 </div>
                 <!-- </div> -->
             </div>
