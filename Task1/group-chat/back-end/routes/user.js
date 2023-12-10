@@ -7,6 +7,8 @@ router.post('/signup', userController.addUser);
 
 router.post('/login', userController.letUser);
 
+router.post('/update', authenticate, userController.updateConnectionId);
+
 router.get('/groups', authenticate, userController.getGroups);
 
 router.post('/chat', authenticate, userController.saveChat);

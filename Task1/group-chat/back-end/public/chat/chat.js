@@ -11,15 +11,32 @@ const userList = document.querySelector('#userList');
 // import FormData from "form-data";
 
 const socket = io();
-socket.on('connect', _ => {
-    console.log(`connected with ${socket.id}`)
+socket.on('connect', async _ => {
+    try {
+        await axios.post(`http://localhost:5000/user/update`, { connectionId: socket.id }, { headers: { "Authorization": token } });
+        console.log(`connected with ${socket.id}`)
+    } catch (err) {
+        socket.disconnect();
+        console.log(err, 'please reload the page');
+    }
 });
+socket.on('member-added', (group, groupId) => {
+    document.getElementById('grpList').innerHTML += `<li class='list-group-item' id='${group}' onclick='fetchChats(${groupId}, event)'>
+        <div class='d-flex'><span class='h5 ms-3 me-4'><i class='bi bi-people'></i></span><h4>${group}</h4></div></li>`;
+    socket.emit('join-group', groupId);
+})
+socket.on('disconnect', () => {
+    console.log(socket.id, 'disconnected');
+})
 socket.on('sent-msgs', (content) => {
     console.log(content);
-    if (content.format === 'image/jpeg') {
-        chatBox.innerHTML += `<div class="col-8 my-1">${content.sender}<div class="mt-1 mb-3"><img src="${content.message}" alt="alt" width="300" height="300" class="img-fluid rounded" /></div></div>`;
-    } else {
-        chatBox.innerHTML += `<div class="col-8 my-1">${content.sender} : ${content.message}`;
+    if (chatBox.id == content.groupId) {
+
+        if (content.format === 'image/jpeg') {
+            chatBox.innerHTML += `<div class="col-8 my-1">${content.sender}<div class="mt-1 mb-3"><img src="${content.message}" alt="alt" width="300" height="300" class="img-fluid rounded" /></div></div>`;
+        } else {
+            chatBox.innerHTML += `<div class="col-8 my-1">${content.sender} : ${content.message}`;
+        }
     }
 });
 
@@ -37,10 +54,12 @@ console.log(parseJwt(token));
 async function sendMsg(grpId, e) {
     try {
         const message = document.querySelector('#comment').value;
-        const files = document.getElementById('file').files;
+        const files = document.getElementById('files').files;
         const formData = new FormData();
-
-        formData.set('file', files[0]);
+        console.log(files);
+        for (let a = 0; a < files.length; a++) {
+            formData.append('files', files[a]);
+        }
         formData.set('message', message);
         const headers = {
             headers: {
@@ -50,14 +69,17 @@ async function sendMsg(grpId, e) {
         };
         const { data } = await axios.post(`http://localhost:5000/group/newMsg?id=${grpId}`, formData, headers);
         document.querySelector('#comment').value = '';
-        document.getElementById('file').value = '';
+        document.getElementById('files').value = '';
         console.log(data);
-        socket.emit('new-msg', data);
-        let HTMLContent = `<div class="col-8 my-1">You : ${data.message}`;
-        if (data.format === 'image/jpeg') {
-            HTMLContent = `<div class="col-8 my-1">You<div class="mt-1 mb-3"><img src="${data.message}" alt="alt" width="300" height="300" class="img-fluid rounded" /></div></div>`;
-        }
-        chatBox.innerHTML += HTMLContent;
+        data.forEach(chat => {
+            socket.emit('new-msg', chat);
+            // socket.emit('new-msg', data);
+            let HTMLContent = `<div class="col-8 my-1">You : ${chat.message}`;
+            if (chat.format === 'image/jpeg') {
+                HTMLContent = `<div class="col-8 my-1">You<div class="mt-1 mb-3"><img src="${chat.message}" alt="alt" width="300" height="300" class="img-fluid rounded" /></div></div>`;
+            }
+            chatBox.innerHTML += HTMLContent;
+        })
     }
     catch (err) {
         console.log(err);
@@ -128,13 +150,15 @@ async function fetchChats(groupId, e) {
         chatBox.innerHTML = '';
         let sender = parseJwt(token).userName;
         console.log(sender);
+        chatBox.id = groupId;
+        // console.log(chats[0].createdAt, new Date(chats[0].createdAt).toDateString());
         chats.forEach(chat => {
             let user = chat.sender;
             if (chat.sender === sender) {
                 user = 'You';
             }
             let HTMLContent = `<div class="col-8 my-1">${user} : ${chat.message}</div>`;
-            if (chat.format === 'image/jpeg') {
+            if (chat.format.indexOf('image') >= 0) {
                 HTMLContent = `<div class='col-8 my-1'>${user}<div class="mt-1 mb-3"><img src="${chat.message}" alt="alt" width="300" height="300" class="img-fluid rounded" /></div></div>`;
             }
             console.log(user);
@@ -181,9 +205,10 @@ document.getElementById('createGrp').onclick = async () => {
 
 
         data.forEach((user, index) => {
-            userList.innerHTML += `<li class="list-group-item"><div class="form-check">
-            <input class="form-check-input" type="checkbox" name="participant" id="${user.name}" value="${user.name}">
-            <label class="form-check-label" for="${user.name}">${user.name}</label></div></li>`;
+            userList.innerHTML += `<li class="list-group-item createGrp"><div class="form-check">
+            <input class="form-check-input" type="checkbox" name="participant" id="${user.id}" value="${user.id}">
+            <label class="form-check-label" for="${user.id}">${user.name}</label>
+            <div class="d-none">${user.phone}<div class="grandChild">${user.email}</div></div></div></li>`;
         })
     }
     catch (err) {
@@ -194,6 +219,19 @@ cancelBtn.onclick = (e) => {
     userList.innerHTML = '';
     document.querySelector('.group').classList.toggle('d-none');
     document.querySelector('.chatList').classList.toggle('d-none');
+}
+const searchField = document.getElementById('searchUser');
+searchField.oninput = () => {
+    console.log(document.querySelectorAll('.createGrp'));
+    document.querySelectorAll('.createGrp').forEach(li => {
+        console.log(li.textContent.toLowerCase(), searchField.value);
+        console.log(li.textContent.toLowerCase().indexOf(searchField.value.toLowerCase()) < 0);
+        if (li.textContent.toLowerCase().indexOf(searchField.value.toLowerCase()) < 0) {
+            li.classList.add('d-none');
+        } else {
+            li.classList.remove('d-none');
+        }
+    })
 }
 form.onsubmit = async (e) => {
     try {
@@ -215,6 +253,10 @@ form.onsubmit = async (e) => {
             }
             const { data } = await axios.post('http://localhost:5000/group/participants', groupDetails, { headers: { "Authorization": token } });
             console.log(data);
+            data.connections.forEach(connection => {
+                console.log(data.details[0][0]);
+                socket.emit('add-member', connection, data.details[0][0].group, data.details[0][0].groupId);
+            })
             document.querySelector('.group').classList.toggle('d-none');
 
             document.querySelector('.chatList').classList.toggle('d-none');

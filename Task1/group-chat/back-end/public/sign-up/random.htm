@@ -40,6 +40,7 @@
             width: 80%;
             /* display: flex; */
         }
+
         #message-input {
             flex-grow: 1;
         }
@@ -47,7 +48,7 @@
 </head>
 
 <body>
-    <div id="message-container"></div>
+    <!-- <div id="message-container"></div>
     <form id="send-container">
         <label for="message-input">Message</label>
         <input type="text" id="message-input" />
@@ -59,7 +60,11 @@
         <br>
         <label for="file">Choose file</label>
         <input type="file" id="file" name="file" />
-    </form>
+    </form> -->
+    <h1 class="title">Hello World! </h1>
+      <p id="currentTime"></p>
+      <input type="search" name="search" id="search" placeholder="search" />
+      <div class="searchInput"></div>
     <!-- <script src="http://localhost:5000/socket.io/socket.io.js"></script> -->
     <script>
         // "use strict";
@@ -100,7 +105,7 @@
 
         const messageContainer = document.getElementById('message-container')
         const messageForm = document.getElementById('send-container')
-        const messageInput = document.getElementById('message-input');        
+        const messageInput = document.getElementById('message-input');
         const join = document.getElementById('join-button');
 
         // const name = prompt('What is your name?')
@@ -133,28 +138,43 @@
         //     appendMessage(`${name} disconnected`)
         // })
 
-        messageForm.addEventListener('submit', e => {
-            e.preventDefault();
-            const fileChosen = e.target.file.value;
-            const message = messageInput.value;
-            const room = document.getElementById('room').value;
-            console.log(message, fileChosen);
-            appendMessage(`You: ${message}`)
-            // socket.emit('send-message', message, room, () => {
-            //     messageContainer.lastElementChild.innerHTML += `<span style='margin-left: 2vw;'>Sent</span>`;
-            // });
-            messageInput.value = ''
-        })
-        join.onclick = () => {
-            const room = document.getElementById('room').value;
-            socket.emit('join-room', room, appendMessage);
-        }
+        // messageForm.addEventListener('submit', e => {
+        //     e.preventDefault();
+        //     const fileChosen = e.target.file.value;
+        //     const message = messageInput.value;
+        //     const room = document.getElementById('room').value;
+        //     console.log(message, fileChosen);
+        //     appendMessage(`You: ${message}`)
+        //     // socket.emit('send-message', message, room, () => {
+        //     //     messageContainer.lastElementChild.innerHTML += `<span style='margin-left: 2vw;'>Sent</span>`;
+        //     // });
+        //     messageInput.value = ''
+        // })
+        // join.onclick = () => {
+        //     const room = document.getElementById('room').value;
+        //     socket.emit('join-room', room, appendMessage);
+        // }
 
-        function appendMessage(message) {
-            const messageElement = document.createElement('div')
-            messageElement.innerText = message;
-            messageContainer.append(messageElement)
-        }            
+        // function appendMessage(message) {
+        //     const messageElement = document.createElement('div')
+        //     messageElement.innerText = message;
+        //     messageContainer.append(messageElement)
+        // }            
+
+        const body = document.querySelector('body');
+        body.innerHTML += `<div class="parent d-none">Mallikarjuna Rao<div class="child d-none">9912027885          
+            <div class="grandChild">kmrao885@gmail.com</div></div></div>`;
+
+        const parentdiv = document.querySelector('.parent');
+        const searchData = document.getElementById('search');
+        searchData.onkeydown = () => {
+            if (parentdiv.textContent.toLowerCase().indexOf(searchData.value.toLowerCase()) >= 0) {
+                // document.querySelector('.searchInput').textContent = searchData.value;
+                parentdiv.classList.remove('d-none');
+            }else {
+                parentdiv.classList.add('d-none');
+            }
+        }
     </script>
 </body>
 

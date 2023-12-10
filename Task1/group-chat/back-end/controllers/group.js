@@ -2,12 +2,12 @@ const User = require('../models/user');
 const Participant = require('../models/participants');
 const Group = require('../models/group');
 const Chat = require('../models/chats');
+const ArchivedChat = require('../models/archivedChats');
 const AWS = require('aws-sdk');
 const fs = require('fs');
-const { group } = require('console');
+const { Op } = require('sequelize');
+const { CronJob } = require('cron');
 
-// const appExport = require('../app');
-// console.log(appExport, 'to see what"s inside');
 
 const uploadToS3 = (data, fileName) => {
     const bucketName = 'trackexpense';
@@ -31,23 +31,55 @@ const uploadToS3 = (data, fileName) => {
                 rej(err);
             } else {
                 res(S3response);
-            }        
+            }
         })
     })
 }
+const job = CronJob.from(
+    {
+        cronTime: '0 0 * * *',
+        onTick: async function () {
+            try {
+                let date = new Date();
+                let yesterday = new Date();
+                yesterday.setDate(date.getDate() - 1);
+                let prevChats = await Chat.findAll(
+                    {
+                        where: { createdAt: { [Op.between]: [yesterday, date] } },                                                
+                    });
+                prevChats = JSON.stringify(prevChats);
+                await ArchivedChat.create(
+                    {
+                        chatsOf: yesterday.toLocaleDateString(),
+                        chats: prevChats
+                    }
+                )
+            } catch (err) {
+                console.log(err, 'in cron job');
+            }
+        },
+        onComplete: null,
+        start: true,
+        timeZone: 'system'
+    }
+);
+
 exports.knowParticipants = async (req, res, next) => {
     try {
         console.log(req.body);
         const { name, participants } = req.body;
-        const promises = participants.map(part => User.findOne({ where: { name: part } }));
+        let connections = [];
+        const promises = participants.map(part => User.findOne({ where: { id: part } }));
         // console.log(promises,'array');
         const users = await Promise.all(promises);
-        console.log(users, 'another one');
         const group = await Group.create({ name, createdBy: req.user.name });
-        const promises2 = users.map(user => group.addUser(user, { through: { name: user.name, group: group.name } }));
+        const promises2 = users.map(user => {
+            connections.push(user.connectionID);
+            return group.addUser(user, { through: { name: user.name, group: group.name } });
+        });
         promises2.push(group.addUser(req.user, { through: { name: req.user.name, group: group.name, isAdmin: true } }));
         const details = await Promise.all(promises2);
-        res.status(201).json({ "message": 'Group successfully created', details });
+        res.status(201).json({ "message": 'Group successfully created', details, connections });
     }
     catch (err) {
         console.log(err, 'in adding participants');
@@ -76,57 +108,55 @@ exports.sendMsg = async (req, res, next) => {
         const { id } = req.query;
         let message = req.body.message;
         let format = 'text';
+        // const pendingPromises = [];
         // let file = req.file;
 
         // const { message, formData } = req.body;
-        console.log(req.file, 'file sent from frontend', req.body.message);
+        console.log(req.files, 'file sent from frontend', req.body);
         const group = await Group.findByPk(id);
         console.log(group.name, 'group found');
 
-        if (req.file) {
-            const readData = fs.readFileSync(`back-end/Images/${req.file.filename}`)
-            // , async (err, data) => {
-            //     try {
+        if (req.files) {
+            console.log(typeof req.files);
+            const pendingPromises = req.files.map(file => {
 
-            //         if (err) {
-            //             console.log(err, 'in reading');
-            //         }
-            //         console.log(data, 'read successfully', data.byteLength);
-            //         const S3response = uploadToS3(data, `Images/${req.user.id}/${req.file.filename}`);
-            //         console.log(S3response, 'after upload to cloud');
-            //         message = S3response.Location;
-            //         format = req.file.mimetype;
-                    
+                return new Promise((res, rej) => {
 
-            //     }
-            //     catch (err) {
-            //         res.status(500).json(err);
-            //     }
-            // })
-
-            const S3response = await uploadToS3(readData, `Images/${req.user.id}/${req.file.filename}`);
-            console.log(S3response, 'after upload to cloud');
-            message = S3response.Location;
-            format = req.file.mimetype;
-            // console.log(message, format);
-            // res.status(201).json(saveMsg(group, message, req.user.name, format));
+                    fs.readFile(file.path, async (err, data) => {
+                        if (err) {
+                            console.log(err, 'in reading file');
+                            rej(err);
+                        }
+                        else {
+                            try {
+                                const S3response = await uploadToS3(data, `Images/${req.user.id}/${file.filename}`);
+                                res(group.createChat(
+                                    {
+                                        message: S3response.Location,
+                                        sender: req.user.name,
+                                        format: file.mimetype,
+                                    }
+                                ));
+                            }
+                            catch (err) {
+                                console.log(err, 'in S3response');
+                            }
+                        }
+                    });
+                })
+            })
+            if (message) {
+                pendingPromises.push(group.createChat(
+                    { message, sender: req.user.name, format }
+                ))
+            }
+            const chats = await Promise.all(pendingPromises);
+            res.status(201).json(chats);
         }
-        console.log(message, format);
-        const result = await group.createChat({ message, sender: req.user.name, format});
-
-        res.status(201).json(result);
     }
     catch (err) {
         console.log('Socket err: ' + err, 'app.js export');
         res.status(500).json({ "message": "Something went wrong!", "Error": err });
-    }
-}
-async function saveMsg(group, message, sender, format) {
-    try {
-        return await group.createChat({ message, sender, format});
-    }catch (err) {
-        console.log(err, 'in saveMsg function');
-        return err;
     }
 }
 

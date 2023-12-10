@@ -121,6 +121,15 @@ exports.getChats = async (req, res, next) => {
         res.status(500).json({ "message": 'Something went wrong!', "Error": err });
     }
 }
+
+exports.updateConnectionId = async (req, res, next) => {
+    try {
+        const result = await req.user.update({ connectionID: req.body.connectionId });
+        res.json({ message: 'Success', result });
+    }catch (err) {
+        res.status(500).json({ "message": 'Something went wrong!', "Error": err });
+    }
+}
 exports.getUsers = async (req, res, next) => {
     try {
         res.status(200).json(await User.findAll({ where: { id: { [Op.ne]: req.user.id } } }));
@@ -132,13 +141,6 @@ exports.getUsers = async (req, res, next) => {
 exports.getGroups = async (req, res, next) => {
     try {
         const groups = await req.user.getGroups();
-        // const io = require('../app');
-        // io.on('connection', socket => {
-        //     groups.forEach(group => socket.join(group.name));
-        //     socket.on('new-msg', (message, group) => {
-        //         socket.to(group).emit('sent-msgs', message);
-        //     })
-        // })
         res.status(200).json({ "message": "success", groups });
     }
     catch (err) {
