@@ -39,12 +39,7 @@ class Product {
     const db = getDB();
     return db.collection('products')
     .find({ _id: new ObjectId(prodId) })
-    .next()
-    .then(product => {
-      console.log(product, 'product fetched');
-      return product;
-    })
-    .catch(err => console.log(err));
+    .next();    
   }
 
   static deleteById(prodId) {
