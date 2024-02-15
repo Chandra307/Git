@@ -47,7 +47,6 @@ exports.getCart = (req, res, next) => {
         .populate('cart.items.productId')
         // .execPopulate()
         .then(user => {
-            console.log(user.cart.items);
             const products = user.cart.items;
             res.render('shop/cart', {
                 path: '/cart',
@@ -72,15 +71,16 @@ exports.postCart = (req, res, next) => {
         .catch(err => console.log(err));
 };
 
-// exports.postCartDeleteProduct = (req, res, next) => {
-//   const prodId = req.body.productId;
-//   req.user
-//     .deleteCartItem(prodId)
-//     .then(() => {
-//       res.redirect('/cart');
-//     })    
-//     .catch(err => console.log(err));
-// };
+exports.postCartDeleteProduct = (req, res, next) => {
+  const prodId = req.body.productId;
+  req.user
+    .deleteCartItem(prodId)
+    .then(() => {
+        console.log('cartItem deleted');
+      res.redirect('/cart');
+    })    
+    .catch(err => console.log(err));
+};
 
 // exports.postOrder = (req, res, next) => {
 //   req.user

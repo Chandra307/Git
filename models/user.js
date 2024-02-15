@@ -89,17 +89,16 @@ userSchema.methods.addToCart = function(product) {
 //             .catch(err => console.log(err));
 //     }
 
-//     deleteCartItem(prodId) {
-//         const db = getDB();
-//         const updatedCartItems = this.cart.items.filter(i => {
-//             return i.productId.toString() !== prodId.toString();
-//         });
-//         return db.collection('users')
-//             .updateOne(
-//                 { _id: new ObjectId(this._id) },
-//                 { $set: { cart: { items: updatedCartItems } } }
-//             );
-//     }
+    userSchema.methods.deleteCartItem = function(prodId) {
+        console.log(prodId);
+        console.log(this.cart.items, 'before update');
+        const updatedCartItems = this.cart.items.filter(i => {
+            return i._id.toString() !== prodId.toString();
+        });
+        this.cart.items = updatedCartItems;
+        console.log(updatedCartItems, 'line 97 - userModel');
+        return this.save();
+    }
 
 //     addOrder() {
 //         const db = getDB();
