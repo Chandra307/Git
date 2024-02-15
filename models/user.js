@@ -89,17 +89,18 @@ userSchema.methods.addToCart = function(product) {
 //             .catch(err => console.log(err));
 //     }
 
-    userSchema.methods.deleteCartItem = function(prodId) {
-        console.log(prodId);
-        console.log(this.cart.items, 'before update');
+    userSchema.methods.deleteCartItem = function(prodId) {         
         const updatedCartItems = this.cart.items.filter(i => {
-            return i._id.toString() !== prodId.toString();
+            return i.productId.toString() !== prodId.toString();
         });
         this.cart.items = updatedCartItems;
-        console.log(updatedCartItems, 'line 97 - userModel');
         return this.save();
     }
 
+    userSchema.methods.clearCart = function() {
+        this.cart.items = [];
+        return this.save();
+    }
 //     addOrder() {
 //         const db = getDB();
 //         return this.getCart()
