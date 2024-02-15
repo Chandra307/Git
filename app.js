@@ -1,14 +1,12 @@
 const path = require('path');
-
 const express = require('express');
-// const bodyParser = require('body-parser');
-
+const mongoose = require('mongoose');
+require('dotenv').config();
 const errorController = require('./controllers/error');
-const { mongoConnect } = require('./util/database');
 const exp = require('constants');
 // const sequelize = require('./util/database');
 // const Product = require('./models/product');
-const User = require('./models/user');
+// const User = require('./models/user');
 // const Cart = require('./models/cart');
 // const CartItem = require('./models/cart-item');
 // const Order = require('./models/order');
@@ -25,14 +23,14 @@ const shopRoutes = require('./routes/shop');
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use((req, res, next) => {
-  User.findById('65cc7d178e02ce6309e0c48c')
-  .then(user => {
-      req.user = new User(user.name, user.email, user.cart, user._id);
-      next();
-    })
-    .catch(err => console.log(err));
-});
+// app.use((req, res, next) => {
+//   User.findById('65cc7d178e02ce6309e0c48c')
+//   .then(user => {
+//       req.user = new User(user.name, user.email, user.cart, user._id);
+//       next();
+//     })
+//     .catch(err => console.log(err));
+// });
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
@@ -72,11 +70,10 @@ app.use(errorController.get404);
 //   .catch(err => {
 //     console.log(err);
 //   });
-mongoConnect(() => {
-  // const user = User.find('Ravi Chandra');
-  // if (!user) {
-  //   new User('Ravi Chandra', 'chandra19151425@gmail.com')
-  //   .create()
-  // }
-  app.listen(3000, () => console.log(`server with pid - ${process.pid} is up and running!`));
-});
+mongoose.connect(process.env.DB_CONNECTION_STRING)
+.then(() => {
+  app.listen(3000, () => {
+    console.log(`server with pid - ${process.pid} is up and running!`);
+  });
+})
+.catch(err => console.log(err));
