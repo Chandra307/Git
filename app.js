@@ -6,7 +6,7 @@ const errorController = require('./controllers/error');
 const exp = require('constants');
 // const sequelize = require('./util/database');
 // const Product = require('./models/product');
-// const User = require('./models/user');
+const User = require('./models/user');
 // const Cart = require('./models/cart');
 // const CartItem = require('./models/cart-item');
 // const Order = require('./models/order');
@@ -23,14 +23,14 @@ const shopRoutes = require('./routes/shop');
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use((req, res, next) => {
-//   User.findById('65cc7d178e02ce6309e0c48c')
-//   .then(user => {
-//       req.user = new User(user.name, user.email, user.cart, user._id);
-//       next();
-//     })
-//     .catch(err => console.log(err));
-// });
+app.use((req, res, next) => {
+  User.findById('65ce0733253d99d406f1d7c5')
+    .then(user => {
+      req.user = user;
+      next();
+    })
+    .catch(err => console.log(err));
+});
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
@@ -71,9 +71,22 @@ app.use(errorController.get404);
 //     console.log(err);
 //   });
 mongoose.connect(process.env.DB_CONNECTION_STRING)
-.then(() => {
-  app.listen(3000, () => {
-    console.log(`server with pid - ${process.pid} is up and running!`);
-  });
-})
-.catch(err => console.log(err));
+  .then(() => {
+    User.findOne()
+      .then(user => {
+        if (!user) {
+          const user = new User(
+            {
+              name: 'Ravi Chandra',
+              email: 'chandra@gmail.com',
+              cart: { items: [] }
+            }
+          );
+          user.save();
+        }
+      })
+    app.listen(3000, () => {
+      console.log(`server with pid - ${process.pid} is up and running!`);
+    });
+  })
+  .catch(err => console.log(err));

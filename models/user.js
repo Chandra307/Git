@@ -1,6 +1,23 @@
-// const { ObjectId } = require('mongodb');
-// const { getDB } = require('../util/database');
+const { mongoose, Schema } = require('mongoose');
 
+const userSchema = new Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    email: {
+        type: String,
+        required: true
+    },
+    cart: {
+        items: [
+            {
+                productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+                quantity: { type: Number, required: true }
+            }
+        ]
+    }
+});
 // class User {
 //     constructor(name, email, cart, id) {
 //         this.name = name;
@@ -121,4 +138,4 @@
 // //   email: Sequelize.STRING
 // // });
 
-// module.exports = User;
+module.exports = mongoose.model('User', userSchema);
