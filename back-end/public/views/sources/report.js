@@ -30,13 +30,15 @@ document.querySelector('#report').onclick = async (e) => {
             console.log(expenses, amount);
             document.getElementById('daily').innerHTML = `<tr><th>Date</th><th>Description</th>
             <th>Category</th><th>Expense (in ₹)</th></tr>`;
+            let total = 0;
             expenses.forEach(expense => {
-                document.getElementById('daily').innerHTML += `<tr><th scope='row'>${expense.date}</th>
+                total += expense.amount;
+                document.getElementById('daily').innerHTML += `<tr><th scope='row'>${(expense.date).slice(0, 10)}</th>
                 <td>${expense.description}</td><td>${expense.category}</td>
                 <td align='right' style='padding-right: 4px;'>${expense.amount}.00</td></tr>`;
             })
             document.getElementById('daily').innerHTML += `<tr><td> </td><td> </td>
-            <th scope='row'>Total expenses</th><td align='right'>${Number(amount.total)}.00</td></tr>`;
+            <th scope='row'>Total expenses</th><td align='right'>${total}.00</td></tr>`;
         }
         else if (prevElement.id === 'date') {
             //     while(prevElement.style.display === 'none'){
@@ -79,6 +81,7 @@ document.querySelector('#report').onclick = async (e) => {
     }
     catch (err) {
         console.log(err);
+        alert(err.response.data);
     }
 }
 
@@ -99,18 +102,17 @@ document.getElementById('year').oninput = async (e) => {
     console.log(e.target);
     try {
         const year = document.getElementById('year').value;
-        const { data: { expenses, amount } } = await axios.get(`/user/annualReport?year=${year}`, { headers: { "Authorization": token } });
-        // console.log(year, expenses[0].month, typeof(expenses[0].month));
+        const { data: { expenses } } = await axios.get(`/user/annualReport?year=${year}`, { headers: { "Authorization": token } });
         document.getElementById('annual').innerHTML = `<tr><th>Month</th><th>Expense (in ₹)</th></tr>`;
-
+        let total = 0;
         expenses.forEach(expense => {
-
-            document.getElementById('annual').innerHTML += `<tr><td>${getMonth(expense.month)}</td>
-                <td align='right'>${expense.total}.00</td></tr>`
+            total += expense.amount;
+            document.getElementById('annual').innerHTML += `<tr><td>${getMonth(expense._id)}</td>
+                <td align='right'>${expense.amount}.00</td></tr>`
         });
 
         document.getElementById('annual').innerHTML += `<tr><th scope='row'>Total expenses</th>
-        <td align='right'>${Number(amount.total)}.00</td></tr>`;
+        <td align='right'>${total}.00</td></tr>`;
     }
     catch (err) {
         console.log(err);
@@ -153,26 +155,25 @@ function hideElements(view) {
     }
 }
 
-
 function getMonth(value) {
     switch (value) {
-        case 01:
+        case 1:
             return "January";
-        case 02:
+        case 2:
             return 'February';
-        case 03:
+        case 3:
             return 'March';
-        case 04:
+        case 4:
             return 'April';
-        case 05:
+        case 5:
             return 'May';
-        case 06:
+        case 6:
             return 'June';
-        case 07:
+        case 7:
             return 'July';
-        case 08:
+        case 8:
             return 'August';
-        case 09:
+        case 9:
             return 'September';
         case 10:
             return 'October';

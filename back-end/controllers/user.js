@@ -30,24 +30,31 @@ exports.addUser = async (req, res, next) => {
         const saltrounds = 10;
         bcrypt.hash(password, saltrounds, async (err, hash) => {
             try {
-                if (err) console.log(err, 'line 31 - userCtrl');
+                if (err) {
+                    console.log(err, 'line 31 - userCtrl');
+                }
                 password = hash;
-                const user = await new User(
-                    { name, email, phone, password, isPremiumUser: false, totalExpenses: 0 }
-                ).save();
+                const user = await new User({
+                    name,
+                    email,
+                    phone,
+                    password,
+                    isPremiumUser: false,
+                    totalExpenses: 0
+                }).save();
                 res.status(201).json(user);
             }
             catch (err) {
                 console.log(err.code, 'line 41 - userCtrl');
                 if (err['code'] === 11000) {
-                    return res.status(403).json('Error: emailId already exists!');
+                    return res.status(403).json('A user with this emailId already exists.');
                 }
                 res.status(500).json(err);
             }
         })
     }
     catch (err) {
-        res.status(403).json(err);
+        res.status(500).json(err);
     }
 }
 
@@ -108,19 +115,13 @@ exports.getDownloads = async (req, res, next) => {
 exports.getDailyReport = async (req, res, next) => {
     try {
         let { date } = req.query;
-        console.log(date, typeof (date), 'line 111-user');
+        if (isInputInvalid(date)) {
+            return res.status(400).json('Please select a date!');
+        }
 
         const expenses = await Expense
             .find({ date, userId: req.user._id })
             .select(['amount', 'description', 'category']);
-        // attributes: ['amount', 'description', 'category']
-
-        // const promise2 = req.user.getExpenses({
-
-        //     where: { date: date },
-        //     attributes: [[fn('sum', col('expense.amount')), 'total']]
-
-        // })
         res.json({ expenses });
     }
     catch (err) {
@@ -131,20 +132,19 @@ exports.getDailyReport = async (req, res, next) => {
 
 exports.getMonthlyReport = async (req, res, next) => {
     try {
+
         let { month } = req.query;
-        console.log(month, 'line 138 - userCtrl');
+        if (isInputInvalid(month)) {
+            return res.status(400).json('Please select a month!');
+        }
+        const start = new Date(month);
+        const end = new Date(month);
+        end.setMonth(start.getMonth() + 1);
 
         const expenses = await Expense
-            .find({ userId: req.user._id })
-            .where('date')
-            .regex(new RegExp(`^${month}`));
-        // const promise2 = req.user.getExpenses({
+            .find({ userId: req.user._id, date: { $gte: start, $lt: end } })
+            .sort('date');
 
-        //     where: { date: { [Op.substring]: `${month}%` } },
-        //     attributes: [[fn('sum', col('amount')), 'total']]
-
-        // })
-        // const [expenses, amount] = await Promise.all([promise1, promise2]);
         res.json({ expenses });
     }
     catch (err) {
@@ -156,27 +156,19 @@ exports.getMonthlyReport = async (req, res, next) => {
 exports.getWeeklyReport = async (req, res, next) => {
     try {
         let { start, end } = req.query;
+        if (isInputInvalid(start) || isInputInvalid(end)) {
+            return res.status(400).json('Please select date range!!');
+        }
+
         start = new Date(start);
         end = new Date(end);
-        // end.setHours(end.getHours() + 24);
-
         const expenses = await Expense
             .find({ date: { $gte: start, $lte: end }, userId: req.user._id })
             .sort([['date', 'asc']]);
-        // attributes: ['amount', 'description', 'category', 'date'],
-        // order: [['date', 'DESC']]
-        // });
-        // const promise2 = req.user.getExpenses({
-
-        //     where: { date: { [Op.between]: [start, end] } },
-        //     attributes: [[fn('sum', col('amount')), 'total']]
-
-        // })
-        // const [expenses, amount] = await Promise.all([promise1, promise2]);
         res.json({ expenses });
     }
     catch (err) {
-        console.log(err, 'weekly', 186);
+        console.log(err, 'weekly');
         res.status(500).json(err);
     }
 }
@@ -184,22 +176,16 @@ exports.getWeeklyReport = async (req, res, next) => {
 exports.getAnnualReport = async (req, res, next) => {
     try {
         const { year } = req.query;
+        const start = new Date(year);
+        const end = new Date(year);
+        end.setFullYear(start.getFullYear() + 1);
 
-        const promise1 = req.user.getExpenses({
-
-            where: { date: { [Op.startsWith]: `${year}-` } },
-            attributes: [[fn('sum', col('amount')), 'total'], [fn('month', col('date')), 'month']],
-            group: ['month']
-
-        })
-        const promise2 = req.user.getExpenses({
-
-            where: { date: { [Op.startsWith]: `${year}-` } },
-            attributes: [[fn('sum', col('amount')), 'total']]
-
-        })
-        const [expenses, amount] = await Promise.all([promise1, promise2]);
-        res.json({ expenses, amount: amount[0] });
+        const expenses = await Expense
+            .aggregate()
+            .match({ date: { $gte: start, $lt: end }, userId: req.user._id })
+            .group({ _id: { $month: '$date' }, amount: { $sum: '$amount' } })
+            .sort('_id');
+        res.json({ expenses });
     }
     catch (err) {
         console.log(err, 'while filming');

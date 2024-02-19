@@ -56,7 +56,7 @@ a {
 }
 #expenses li {
     width: 100%;
-    overflow-x: scroll;
+    /* overflow-x: scroll; */
 }
 #expenses li {
     list-style: none;

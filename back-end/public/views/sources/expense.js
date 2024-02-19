@@ -12,20 +12,9 @@ select.oninput = () => {
 }
 category.oninput = () => {
 
-    if (category.value === 'Others') {
-        
-        // const custom = document.createElement('input');
-        // custom.className = 'form-control';
-        // custom.name = 'custom';
-        // custom.id = 'custom';
-        // custom.placeholder = 'Enter category';
-        // const savedSibling = category.nextElementSibling;
-        // category.insertAdjacentElement('afterend', custom);
-        // custom.insertAdjacentElement('afterend', savedSibling);
-        document.getElementById('custom').classList.remove('d-none');
-    } else {
-        document.getElementById('custom').classList.add('d-none');
-    }
+    const classList = document.getElementById('custom').classList;
+    category.value === 'Others' ? classList.remove('d-none') : classList.add('d-none');
+    
 }
 async function sendGetRequest(page) {
     try {
@@ -153,16 +142,12 @@ window.addEventListener('DOMContentLoaded', async () => {
         if (files.length) {
 
             files.forEach(file => {
-                document.querySelector('#downloads').innerHTML += `<li><a href='${file.fileUrl}'>${new Date(file.createdAt).toLocaleString()}</a></li>`;
+                document.querySelector('#downloads').innerHTML += `<li><a href='${file.fileUrl}'>${new Date(file.time).toLocaleString()}</a></li>`;
             })
         }
     }
     catch (err) {
         console.log(err);
-        // if(err.response.status === 401){
-        //     alert('You are logged out!!');
-        //     window.location = '../login_page/login.html';
-        // }
         document.querySelector('#error').textContent = `${err}`
     }
 })
@@ -287,7 +272,7 @@ async function editExpense(id) {
             console.log('desired functionality', document.getElementById('category').innerHTML);
         }
         document.getElementById('category').value = expense.category;
-        document.getElementById('date').value = expense.date;
+        document.getElementById('date').value = expense.date.slice(0, 10);
         document.getElementById('submit').textContent = 'Update Expense';
         putId = id;
     }

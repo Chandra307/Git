@@ -4,8 +4,6 @@ const path = require('path');
 const Expense = require('../models/expense');
 const FileUrl = require('../models/fileUrl');
 
-// const UserServices = require('../services/userservices');
-
 const S3Service = require('../services/S3service');
 
 const mongoose = require('mongoose');
@@ -59,7 +57,6 @@ exports.getExpenses = async (req, res, next) => {
         const total = await Expense.countDocuments({ userId: req.user._id });
 
         const hasNextPage = (currentPage * limit) < total;
-        console.log(hasNextPage, '!?', currentPage * limit, typeof (currentPage));
         const nextPage = Number(currentPage) + Number(hasNextPage);
         const pageData = {
             currentPage,
@@ -69,9 +66,11 @@ exports.getExpenses = async (req, res, next) => {
             nextPage,
             limit
         }
-        // const expenses = await req.user.getExpenses({ order: [['date', 'ASC']], offset: (currentPage - 1) * limit, limit: limit });
-        const expenses = await Expense.find({ userId: req.user._id })
-        console.log('Are they premiumUser?', req.user.isPremiumUser);
+        const expenses = await Expense
+            .find({ userId: req.user._id })
+            .skip((currentPage - 1) * limit)
+            .limit(limit)
+            .sort('date');
         res.json({ expenses, pageData, user: req.user.name });
     }
     catch (err) {
@@ -160,18 +159,15 @@ exports.downloadExpense = async (req, res, next) => {
         const expenses = await Expense
             .find({ userId: req.user._id })
             .select(['amount', 'category', 'description', 'date']);
-
-        // return res.send(expenses);
-        // const expFile = fs.createWriteStream(
-        //     path.join(__dirname, 'exp.txt'),
-        //     { flags: "a+" }
-        // );
-        // expenses.forEach(exp => {expFile.write(Object.keys(exp).map(key => key+':'+exp[key]))});
+            
         const data = JSON.stringify(expenses);
-        const fileName = `Expenses/${req.user.id}/${new Date().toString()}.txt`;
+        const fileName = `Expenses/${req.user._id}/${new Date().toString()}.txt`;
         const fileUrl = await S3Service.uploadtoS3(data, fileName);
-        console.log(fileUrl, 's3response');
-        await new FileUrl({ fileUrl: fileUrl.Location, user: req.user._id }).save();
+        await new FileUrl({
+            fileUrl: fileUrl.Location,
+            user: req.user._id,
+            time: new Date()
+        }).save();
         res.json(fileUrl.Location);
     }
     catch (err) {

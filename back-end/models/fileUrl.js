@@ -6,6 +6,10 @@ const fileSchema = new Schema(
             type: String,
             required: true
         },
+        time: {
+            type: Date,
+            required: true
+        },
         user: {
             type: Schema.Types.ObjectId,
             ref: 'User',
