@@ -1,20 +1,23 @@
+"use strict";
+
 const ul = document.getElementById('expenses');
-const token = localStorage.getItem('token');
+// const token = localStorage.getItem('token');
 const pages = document.getElementById('pages');
-const select = document.getElementById('per-page');
-const category = document.getElementById('category');
+const selectNoOfExpenses = document.getElementById('per-page');
+const categorySelect = document.getElementById('category');
 let putId;
 
-select.oninput = () => {
-    localStorage.setItem("number", select.value);
+const table = document.querySelector('.table');
+
+selectNoOfExpenses.oninput = () => {
+    localStorage.setItem("number", selectNoOfExpenses.value);
     sendGetRequest(1);
-    console.log(select.value, localStorage.getItem('number'));
 }
-category.oninput = () => {
+categorySelect.oninput = () => {
 
     const classList = document.getElementById('custom').classList;
-    category.value === 'Others' ? classList.remove('d-none') : classList.add('d-none');
-    
+    categorySelect.value === 'Others' ? classList.remove('d-none') : classList.add('d-none');
+
 }
 async function sendGetRequest(page) {
     try {
@@ -23,7 +26,7 @@ async function sendGetRequest(page) {
         if (localStorage.getItem('number')) {
             number = localStorage.getItem('number');
         }
-        const { data: { expenses, pageData,...i } } = await axios.get(`http://localhost:3000/expense/getexpenses?page=${page}&number=${number}`, { headers: { "Authorization": token } });
+        const { data: { expenses, pageData, ...i } } = await axios.get(`/expense/getexpenses?page=${page}&number=${number}`);
         if (!expenses.length) {
             document.querySelector('.expenses').style.display = 'none';
             document.querySelector('.welcome').innerHTML = `<p>Hi ${i.user}! Looks like you don't have any expenses. Click on the '+' button below to add one now! :)</p>`;
@@ -31,16 +34,20 @@ async function sendGetRequest(page) {
         else {
             document.querySelector('.welcome').innerHTML = '';
             document.querySelector('.expenses').style.display = 'initial';
-            ul.innerHTML = `<h2>Expenses</h2>`;
+            if (table.querySelector('tbody')) {
+                table.querySelector('tbody').remove();
+            }
+            let rows = '';
             expenses.forEach((expense, index) => {
-                displayExpenses(expense, index, pageData.limit, pageData.currentPage);
+                rows += displayExpenses(expense, index, pageData.limit, pageData.currentPage);
             });
+            table.innerHTML += `<tbody>${rows}</tbody>`;
         }
 
         pages.innerHTML = '';
         if (pageData.previousPage > 0) {
 
-            if (+pageData.previousPage - 1 === 1) {
+            if (pageData.previousPage - 1 === 1) {
                 pages.innerHTML = `<button class='btn' id='page1' onclick='sendGetRequest(1)'>1</button>`;
             }
             else if (pageData.previousPage - 1 > 1) {
@@ -66,6 +73,10 @@ async function sendGetRequest(page) {
     }
     catch (err) {
         console.log(err);
+        if (err.response.status === 401) {
+            alert('Please login again!');
+            window.location.href = '/login.html';
+        }
     }
 }
 
@@ -73,17 +84,16 @@ document.querySelector('form').onsubmit = async (e) => {
     try {
         e.preventDefault();
 
-        if (document.getElementById('error')) {            
+        if (document.getElementById('error')) {
             document.getElementById('error').textContent = '';
         }
-        
+
         let category = e.target.category.value;
         if (!document.getElementById('custom').classList.contains('d-none')) {
             category = e.target.custom.value;
             const newCategory = document.createElement('option');
             newCategory.textContent = category;
-            document.getElementById('category').insertAdjacentElement('afterbegin', newCategory);
-            console.log(e.target.custom.value, document.getElementById('category').innerHTML);
+            categorySelect.insertAdjacentElement('afterbegin', newCategory);
         }
 
         const expenseDetails = {
@@ -94,18 +104,19 @@ document.querySelector('form').onsubmit = async (e) => {
         };
         e.target.reset();
 
-        if(!putId){
-            await axios.post('expense/addexpense', expenseDetails, { headers: { "Authorization": token } });
+        if (!putId) {
+            await axios.post('/expense/addexpense', expenseDetails);
             // sendGetRequest(1);
             // document.querySelector('dialog').close();
         }
         else {
-            await axios.put(`expense/editexpense/${putId}`, expenseDetails, { headers: { "Authorization": token } });
+            await axios.put(`/expense/editexpense/${putId}`, expenseDetails);
             document.getElementById('submit').textContent = 'Add Expense';
             putId = '';
         }
         sendGetRequest(1);
         document.querySelector('dialog').close();
+        document.getElementById('custom').classList.add('d-none');
     }
     catch (err) {
         document.querySelector('#error').textContent = `${err}`;
@@ -114,20 +125,16 @@ document.querySelector('form').onsubmit = async (e) => {
 
 window.addEventListener('DOMContentLoaded', async () => {
     try {
-        if(!token){
-            window.location = 'login.html';
-        }
-        console.log(token);
         document.getElementById('error').textContent = '';
 
         const page = 1;
         sendGetRequest(page);
 
         if (localStorage.getItem('number')) {
-            select.value = localStorage.getItem('number');
+            selectNoOfExpenses.value = localStorage.getItem('number');
         }
 
-        const { data: { files, premium } } = await axios.get('user/downloads', { headers: { "Authorization": token } });
+        const { data: { files, premium } } = await axios.get('/user/downloads');
         if (premium) {
 
             showLeaderboard();
@@ -154,23 +161,24 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 document.getElementById('premium').onclick = async (e) => {
     try {
-        const response = await axios.get('premium/purchase', { headers: { "Authorization": token } });
+        const { data: { order, key_id } } = await axios.get('/premium/purchase');
+
         var options = {
-            "key": response.data.key_id,
+            "key": key_id,
             "name": "Pocket Tracker",
             "description": "Test Transaction",
-            "order_id": response.data.order.id,
+            "order_id": order.id,
             "theme": {
                 "color": "#3399cc"
             },
             "handler": async function (result) {
                 try {
-                    await axios.post('premium/updateStatus', {
+                    await axios.post('/premium/updateStatus', {
                         order_id: options.order_id,
                         payment_id: result.razorpay_payment_id
-                    }, { headers: { "Authorization": token } });
+                    });
 
-                    alert('You are a premium user now!');
+                    alert('Congrats, you are a premium user now!');
                     document.getElementById('premium').remove();
                     showLeaderboard();
                     document.querySelector('.premium').textContent = 'Premium User';
@@ -186,11 +194,11 @@ document.getElementById('premium').onclick = async (e) => {
 
         rzp1.on('payment.failed', async function ({ error: { metadata } }) {
             try {
-                await axios.post('premium/updateStatus', {
+                await axios.post('/premium/updateStatus', {
                     status: "failed",
                     order_id: options.order_id,
                     payment_id: metadata.payment_id
-                }, { headers: { "Authorization": token } });
+                });
                 alert('Sorry, payment failed!');
             }
             catch (err) {
@@ -204,17 +212,30 @@ document.getElementById('premium').onclick = async (e) => {
 }
 
 function displayExpenses(obj, index, limit, page) {
-
+    let number;
     if (limit && page) {
         number = ((page - 1) * limit) + index + 1;
     }
-    ul.innerHTML += `<li id='${obj._id}' class='list-group-item'><div>${number}. ₹${obj.amount} - ${obj.description} - ${obj.category}</div>
-                    <button class='btn btn-outline-danger' onclick='deleteExpense("${obj._id}")' title='Delete'>
-                    <span class='del-icon'>X</span></button>
-                    <button class='btn btn-outline-success' onclick='editExpense("${obj._id}")' title='Edit'>
-                    <span class='glyphicon'>&#x270f;</span></button></li>`;
+    // ul.innerHTML += `<li id='${obj._id}' class='list-group-item'><div>${number}. ₹${obj.amount} - ${obj.description} - ${obj.category}</div>
+    //                 <button class='btn btn-outline-danger btn-sm' onclick='deleteExpense("${obj._id}")' title='Delete'>
+    //                 <span class='bi bi-trash'></span></button>
+    //                 <button class='btn btn-outline-success btn-sm' onclick='editExpense("${obj._id}")' title='Edit'>
+    //                 <span class='bi bi-pencil'></span></button></li>`;
+
+    return `<tr id="${obj._id}" onclick="displayMenu.call(this)" style="cursor: pointer;"><th scope='row'>${number}</th><td>${obj.date.slice(0, 10)}</td>
+    <td>${obj.description}</td><td class='d-md-table-cell d-none'>${obj.category}</td>
+    <td>${obj.amount}<div class="d-inline ms-2"><i class='bi bi-three-dots-vertical ms-5 d-none' data-bs-toggle='dropdown' 
+    onclick='event.stopPropagation()'></i><div class='dropdown-menu'>
+    <div class='btn-group'><button class='btn btn-outline-danger btn-sm mx-2'
+    onclick='deleteExpense("${obj._id}")' title='Delete'><span class='bi bi-trash'></span>
+    </button><button class='btn btn-outline-success btn-sm me-2'
+    onclick='editExpense("${obj._id}")' title='Edit'><span class='bi bi-pencil'></span>
+    </button></div></div></div></td></tr>`;
 }
 
+function displayMenu() {
+    this?.querySelector('i').classList.toggle('d-none');
+}
 function showLeaderboard() {
 
     document.getElementById('leader').removeAttribute('style');
@@ -223,9 +244,12 @@ function showLeaderboard() {
         try {
             document.getElementById('leaderboard').innerHTML = `<h2 style='font-family: arial;'>Leaderboard</h2>`;
 
-            const response = await axios.get('premium/leaderboard');
-            response.data.forEach((detail, index) => {
-                document.getElementById('leaderboard').innerHTML += `<li id='${detail.name}' style='font-size: 1.1rem;'>${index+1}. ${detail.name} - Total expenses: ₹${Number(detail.totalExpenses)}</li>`;
+            const { data: { users, loggedInUser } } = await axios.get('/premium/leaderboard');
+
+            users.forEach((detail, index) => {
+                let name;
+                name = detail.name === loggedInUser ? detail.name + ' (You) ' : detail.name;
+                document.getElementById('leaderboard').innerHTML += `<li id='${detail.id}}' style='font-size: 1.1rem;'>${index + 1}. ${name} - Total expenses: ₹${Number(detail.totalExpenses)}</li>`;
             });
         }
         catch (err) {
@@ -244,7 +268,7 @@ async function deleteExpense(id) {
         const token = localStorage.getItem('token');
         if (confirm('Delete this expense?')) {
 
-            await axios.delete(`expense/delete-expense/${id}`, { headers: { "Authorization": token } });
+            await axios.delete(`/expense/delete-expense/${id}`);
             document.getElementById(id).remove();
             sendGetRequest(1);
         }
@@ -258,14 +282,14 @@ async function deleteExpense(id) {
 async function editExpense(id) {
     try {
         const li = document.getElementById('id');
-        const { data: { expense } } = await axios.get(`expense/getexpense/${id}`, { headers: { "Authorization": token } });
+        const { data: { expense } } = await axios.get(`/expense/getexpense/${id}`);
         const newOption = Array.from(document.getElementById('category').children).filter(option => option.textContent === expense.category);
         console.log(newOption.length);
         document.querySelector('dialog').showModal();
         document.getElementById('amount').focus();
         document.getElementById('amount').value = expense.amount;
         document.getElementById('desc').value = expense.description;
-        if (!newOption.length) {            
+        if (!newOption.length) {
             const newCategory = document.createElement('option');
             newCategory.textContent = expense.category;
             document.getElementById('category').insertAdjacentElement('afterbegin', newCategory);
@@ -287,9 +311,17 @@ document.getElementById('plus').onclick = () => {
 }
 
 document.querySelector('#close').onclick = () => {
-    console.log('close dialog');
     document.querySelector('form').reset();
     document.getElementById('submit').textContent = 'Add Expense';
     document.querySelector('dialog').close();
     putId = '';
+}
+
+document.querySelector('a[role = "button"]').onclick = async () => {
+    try {
+        await axios.get('/user/logout');
+        window.location.href = '/login.html';
+    } catch (err) {
+        console.log(err);
+    }
 }

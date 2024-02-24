@@ -8,7 +8,11 @@ const Expense = require('../models/expense');
 const FileUrl = require('../models/fileUrl');
 
 function generateJWT(id, name) {
-    return jwt.sign({ userId: id, name: name }, process.env.JWT_KEY_SECRET);
+    return jwt.sign(
+        { userId: id, name: name },
+        process.env.JWT_KEY_SECRET,
+        { expiresIn: '2d' }
+    );
 }
 
 function isInputInvalid(value) {
@@ -75,6 +79,7 @@ exports.getUser = async (req, res, next) => {
                 console.log(err);
             }
             if (result) {
+                res.cookie('token', generateJWT(user._id, user.name), { httpOnly: true, sameSite: 'strict' });
                 return res.json({ success: true, message: 'User logged in succesfully!', token: generateJWT(user._id, user.name) });
             }
             else {
@@ -94,7 +99,7 @@ exports.showLeaderboard = async (req, res, next) => {
             .select(['name', 'totalExpenses'])
             .sort('-totalExpenses');
 
-        res.json(users);
+        res.json({ users, loggedInUser: req.user.name });
     }
     catch (err) {
         console.log(err);
@@ -119,10 +124,24 @@ exports.getDailyReport = async (req, res, next) => {
             return res.status(400).json('Please select a date!');
         }
 
-        const expenses = await Expense
-            .find({ date, userId: req.user._id })
-            .select(['amount', 'description', 'category']);
-        res.json({ expenses });
+        const [resultArray] = await Expense
+            .aggregate()
+            .match({ date: new Date(date), userId: req.user._id })
+            .group({
+                _id: null,
+                total: { $sum: '$amount' },
+                expenses: {
+                    $push: {
+                        date: '$date',
+                        description: '$description',
+                        category: '$category',
+                        amount: '$amount'
+                    }
+                }
+            });
+        const total = resultArray ? resultArray.total : 0;
+        const expenses = resultArray ? resultArray.expenses : [];
+        res.json({ total, expenses });
     }
     catch (err) {
         console.log(err);
@@ -141,11 +160,25 @@ exports.getMonthlyReport = async (req, res, next) => {
         const end = new Date(month);
         end.setMonth(start.getMonth() + 1);
 
-        const expenses = await Expense
-            .find({ userId: req.user._id, date: { $gte: start, $lt: end } })
-            .sort('date');
-
-        res.json({ expenses });
+        const [resultArray] = await Expense
+            .aggregate()
+            .match({ date: { $gte: start, $lt: end }, userId: req.user._id })
+            .sort('date')
+            .group({
+                _id: { $month: '$date' },
+                total: { $sum: '$amount' },
+                expenses: {
+                    $push: {
+                        date: '$date',
+                        description: '$description',
+                        category: '$category',
+                        amount: '$amount'
+                    }
+                }
+            });
+        const total = resultArray ? resultArray.total : 0;
+        const expenses = resultArray ? resultArray.expenses : [];
+        res.json({ total, expenses });
     }
     catch (err) {
         console.log(err, 'line 151 - userCtrl');
@@ -162,10 +195,25 @@ exports.getWeeklyReport = async (req, res, next) => {
 
         start = new Date(start);
         end = new Date(end);
-        const expenses = await Expense
-            .find({ date: { $gte: start, $lte: end }, userId: req.user._id })
-            .sort([['date', 'asc']]);
-        res.json({ expenses });
+        const [resultArray] = await Expense
+            .aggregate()
+            .match({ date: { $gte: start, $lte: end }, userId: req.user._id })
+            .sort({ date: 1 })
+            .group({
+                _id: null,
+                total: { $sum: '$amount' },
+                expenses: {
+                    $push: {
+                        date: '$date',
+                        description: '$description',
+                        category: '$category',
+                        amount: '$amount'
+                    }
+                }
+            });
+        const total = resultArray ? resultArray.total : 0;
+        const expenses = resultArray ? resultArray.expenses : [];
+        res.json({ total, expenses });
     }
     catch (err) {
         console.log(err, 'weekly');
@@ -189,6 +237,15 @@ exports.getAnnualReport = async (req, res, next) => {
     }
     catch (err) {
         console.log(err, 'while filming');
+        res.status(500).json(err);
+    }
+}
+
+exports.byeUser = async (req, res, next) => {
+    try {
+        res.clearCookie('token');
+        res.json('User logged out');
+    } catch (err) {
         res.status(500).json(err);
     }
 }

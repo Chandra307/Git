@@ -5,6 +5,9 @@
 .navbar a:hover, a.active {
     color: white;
 }
+a[role="button"] {
+    color: #d8d4d4 !important;
+}
 div {
     margin: auto;
     width: fit-content;
@@ -16,14 +19,32 @@ table {
     background-color: #f7c465;
 }
 
-#download {
+#downloadBtn {
+    position: fixed;
+    bottom: 3rem;
+    right: 6rem;
     border: 1px solid wheat;
-    border-radius: 4rem;
-    padding: 0.4rem;
-    margin-top: 1.5rem;
-    background-color: #79e8f7;
+    /* padding: 0.4rem; */
+    background-color: #3fa349;
     color: white;
     cursor: pointer;
+}
+#downloadIcon {
+    position: fixed;
+    bottom: 2.1rem;
+    right: 2.2rem;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 1.5rem;
+    cursor: pointer;
+    background-color: white;
+}
+#downloadIcon i {
+    color: #3fa349;
+    font-size: 3rem;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 1.5rem;
 }
 
 #view {
@@ -45,10 +66,6 @@ table {
 td[align] {
     position: relative;
     right: 2rem;
-}
-#download {
-    bottom: 3rem;
-    right: 6rem;
 }
 a {
     text-decoration: none;

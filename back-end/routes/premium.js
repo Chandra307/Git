@@ -10,6 +10,6 @@ router.get('/purchase', access.authenticate, orderController.purchase);
 
 router.post('/updateStatus', access.authenticate, orderController.update);
 
-router.get('/leaderboard', userController.showLeaderboard);
+router.get('/leaderboard', access.authenticate, userController.showLeaderboard);
 
 module.exports = router;

@@ -10,6 +10,8 @@ router.post('/signup', userController.addUser);
 
 router.post('/login', userController.getUser);
 
+router.get('/logout', userController.byeUser);
+
 router.get('/downloadfile', access.authenticate, expenseController.downloadExpense);
 
 router.get('/downloads', access.authenticate, userController.getDownloads);

@@ -8,21 +8,20 @@
     <title>Report</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="./sources/report.css">
 </head>
 
 <body>
     <nav class="navbar sticky-top">
-            <div class="container">
+        <div class="container">
             <a href="expense.htm">Dashboard</a>
             <a href="#" class="active">Report</a>
-            <a href="login.html" role="button" onclick="localStorage.removeItem('token')">Logout</a>
-        </nav>
+            <a role="button">Logout</a>
+    </nav>
     </div>
-    <div>
-        <h3>Day to Day Expenses</h3>
-
-        <select name="order" id="view">
+    <div class="mt-4">
+        <select name="order" id="view" class="ms-md-0 ms-2">
             <option>DAILY</option>
             <option>WEEKLY</option>
             <option selected>MONTHLY</option>
@@ -30,15 +29,15 @@
         </select>
         <label>EXPENSES</label><br /><br />
         <!-- <label>Select</label> -->
-        <input type="date" name="date" id="date" style="display: none;" />
-        <span id="week" style="display: none;">
+        <input type="date" name="date" id="date" class="d-none ms-md-0 ms-3" />
+        <span id="week" class="d-none ms-md-0 ms-2">
             <input type="date" name="start" id="start" value="" />
             <label>to</label>
             <input type="date" name="end" id="end" value="" />
         </span>
-        <input type="month" name="month" id="month" />
-        <input type="button" id="report" value="View" style="line-height: 1.35rem;" />
-        <table id="daily" class="table">
+        <input type="month" name="month" id="month" class="ms-md-0 ms-3" />
+        <input class="ms-md-0 ms-2 mt-2" type="button" id="report" value="View" style="line-height: 1.35rem;" />
+        <table id="shortTerm" class="table">
             <tr>
                 <th>Date</th>
                 <th>Description</th>
@@ -47,14 +46,19 @@
             </tr>
         </table>
         <label for="year">Search by Year:</label>
-        <input type="number" min="1965" max="2200" name="year" id="year" value="2022">
+        <input type="number" min="1965" max="2200" name="year" id="year" value="2024">
         <table id="annual" class="table">
             <tr>
                 <th>Month</th>
                 <th>Expense (in ₹)</th>
             </tr>
         </table>
-        <button class="btn" id="download" style="position: fixed;">Download</button>
+        <button class="btn d-md-block d-none rounded-pill" id="downloadBtn">Download</button>
+        <!-- <button class="btn d-md-none" id="downloadIcon">
+        </button> -->
+        <span class="d-md-none" id="downloadIcon" title="Download report">
+            <i class="bi bi-arrow-down-circle-fill d-flex"></i>
+        </span>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"

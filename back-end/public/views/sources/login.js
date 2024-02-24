@@ -1,3 +1,4 @@
+"use strict";
 const passwordInput = document.querySelector("#password");
 const eye = document.querySelector("#eye");
 
@@ -20,7 +21,7 @@ document.querySelector('form').onsubmit = async (e) => {
         localStorage.setItem('token', response.data.token);
         console.log(localStorage.getItem('token'));
         window.location.href = 'expense.htm';
-        
+
     }
     catch (err) {
         console.log(err);
@@ -48,9 +49,9 @@ document.getElementById('forgot').onclick = () => {
         }
     }
 }
-eye.onclick = (e) => {
+eye.onclick = function (e) {
     console.log(this, e.target);
-    e.target.classList.toggle("fa-eye-slash");
+    this.classList.toggle("bi-eye");
     const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
     passwordInput.setAttribute("type", type);
 }

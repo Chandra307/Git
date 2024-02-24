@@ -10,6 +10,12 @@
     color: #d8d4d4;
     font-family: verdana;
 }
+a[role="button"] {
+    color: #d8d4d4 !important;
+}
+.navbar a[role='button']:hover {
+    color: white;
+}
 form {
     width: 18rem;
     margin: auto;
@@ -38,9 +44,11 @@ form select, input[type="date"] {
 h2 {
     text-align: center;
 }
-div {
-    width: fit-content;
-    margin: auto;
+thead {
+    background-color: navajowhite;
+}
+tbody tr:hover{
+    background-color: #fbe0bdd1;
 }
 form p {
     color: red;
@@ -83,6 +91,9 @@ a {
 .btn-outline-success, .btn-outline-danger {
     line-height: 0.5rem;
     width: min-content;
+}
+.dropdown-menu {
+    min-width: max-content;
 }
 #pages button.active {
     height: 2.5rem;

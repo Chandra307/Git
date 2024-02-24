@@ -2,107 +2,87 @@ const token = localStorage.getItem('token');
 
 document.getElementById('view').onchange = (e) => {
     const view = e.target.value;
-    console.log(view);
-    hideElements(view);
+
+    const dateElement = document.getElementById('date');
+    const weekElement = document.getElementById('week');
+    const monthElement = document.getElementById('month');
+
+    view === 'DAILY' ? hideElements(dateElement, weekElement, monthElement) :
+        view === 'WEEKLY' ? hideElements(weekElement, dateElement, monthElement) :
+            hideElements(monthElement, dateElement, weekElement);
 }
-window.addEventListener('DOMContentLoaded', () => {
-    if (!token) {
-        window.location.href = 'login.html';
-    }
-})
+
 document.querySelector('#report').onclick = async (e) => {
     try {
+        const view = document.getElementById('view').value;
 
-        let prevElement = document.querySelector('#report').previousElementSibling;
-        console.log(prevElement.style.display);
+        if (view === 'MONTHLY') {
+            const month = document.querySelector('#month').value;
+            const { data: { expenses, total } } = await axios
+                .get(`/user/monthlyReport?month=${month}`);
 
-        if (prevElement.style.display == 'none') {
-            while (prevElement.style.display === 'none') {
-                prevElement = prevElement.previousElementSibling;
-            }
-        }
-        console.log(prevElement, prevElement.style.display, prevElement.id, prevElement.value);
-        // document.getElementById('daily').innerHTML = `<tr><th>Date</th><th>Description</th>
-        //     <th>Category</th><th>Expense <br/>(in ₹)</th></tr>`;
-        if (prevElement.id === 'month') {
-            const month = prevElement.value;
-            const { data: { expenses, amount } } = await axios.get(`/user/monthlyReport?month=${month}`, { headers: { "Authorization": token } });
-            console.log(expenses, amount);
-            document.getElementById('daily').innerHTML = `<tr><th>Date</th><th>Description</th>
+            document.getElementById('shortTerm').innerHTML = `<tr><th>Date</th><th>Description</th>
             <th>Category</th><th>Expense (in ₹)</th></tr>`;
-            let total = 0;
             expenses.forEach(expense => {
-                total += expense.amount;
-                document.getElementById('daily').innerHTML += `<tr><th scope='row'>${(expense.date).slice(0, 10)}</th>
+                document.getElementById('shortTerm').innerHTML += `<tr><th scope='row'>${(expense.date).slice(0, 10)}</th>
                 <td>${expense.description}</td><td>${expense.category}</td>
                 <td align='right' style='padding-right: 4px;'>${expense.amount}.00</td></tr>`;
             })
-            document.getElementById('daily').innerHTML += `<tr><td> </td><td> </td>
+            document.getElementById('shortTerm').innerHTML += `<tr><td> </td><td> </td>
             <th scope='row'>Total expenses</th><td align='right'>${total}.00</td></tr>`;
         }
-        else if (prevElement.id === 'date') {
-            //     while(prevElement.style.display === 'none'){
-            //         prevElement = prevElement.previousElementSibling;
-            //     }
-            //     console.log(prevElement.type, prevElement.value);
+        else if (view === 'DAILY') {
+
             const date = document.getElementById('date').value;
-            const { data: { expenses, amount } } = await axios.get(`/user/dailyReport?date=${date}`, { headers: { "Authorization": token } });
-            console.log(date, expenses, amount);
-            
-            document.getElementById('daily').innerHTML = `<tr><th>#</th><th>Description</th>
+            const { data: { expenses, total } } = await axios
+                .get(`/user/dailyReport?date=${date}`);
+
+            document.getElementById('shortTerm').innerHTML = `<tr><th>#</th><th>Description</th>
             <th>Category</th><th>Expense (in ₹)</th></tr>`;
-            let total = 0;
+
             expenses.forEach((expense, index) => {
-                total += expense.amount;
-                document.getElementById('daily').innerHTML += `<tr><th scope='row'>${index + 1}</th>
+                document.getElementById('shortTerm').innerHTML += `<tr><th scope='row'>${index + 1}</th>
                 <td>${expense.description}</td><td>${expense.category}</td>
             <td align='right'>${expense.amount}.00</td></tr>`;
             });
-            document.getElementById('daily').innerHTML += `<tr><td> </td><td> </td>
+
+            document.getElementById('shortTerm').innerHTML += `<tr><td> </td><td> </td>
             <th scope='row'>Total expenses</th><td align='right'>${total}.00</td></tr>`;
         }
         else {
             const start = document.getElementById('start').value;
             const end = document.getElementById('end').value;
-            const { data: { expenses } } = await axios.get(`/user/weeklyReport?start=${start}&end=${end}`, { headers: { "Authorization": token } });
-            console.log(expenses);
-            document.getElementById('daily').innerHTML = `<tr><th>Date</th><th>Description</th>
+
+            const { data: { expenses, total } } = await axios
+                .get(`/user/weeklyReport?start=${start}&end=${end}`);
+
+            document.getElementById('shortTerm').innerHTML = `<tr><th>Date</th><th>Description</th>
             <th>Category</th><th>Expense (in ₹)</th></tr>`;
-            let total = 0;
+
             expenses.forEach(expense => {
-                total += expense.amount;
-                document.getElementById('daily').innerHTML += `<tr><th scope='row'>${(expense.date).slice(0, 10)}</th>
+                document.getElementById('shortTerm').innerHTML += `<tr><th scope='row'>${(expense.date).slice(0, 10)}</th>
                 <td>${expense.description}</td><td>${expense.category}</td>
                 <td align='right'>${expense.amount}.00</td></tr>`;
             })
-            document.getElementById('daily').innerHTML += `<tr><td> </td><td> </td>
+
+            document.getElementById('shortTerm').innerHTML += `<tr><td> </td><td> </td>
             <th scope='row'>Total expenses</th><td align='right'>${total}.00</td></tr>`;
         }
     }
     catch (err) {
         console.log(err);
+        if (err.response.status === 401) {
+            alert('Please login again!');
+            return window.location.href = '/login.html';
+        }
         alert(err.response.data);
     }
 }
 
-// document.getElementById('month').oninput = async (e) => {
-//     console.log(e.target);
-//     try {
-//         const month = document.getElementById('month').value;
-//         console.log(month);
-//         const { data } = await axios.get(`http://localhost:3000/user/monthlyReport?month=${month}`, { headers: { "Authorization": token } });
-//         console.log(date);
-//     }
-//     catch (err) {
-//         console.log(err);
-//     }
-// }
-
 document.getElementById('year').oninput = async (e) => {
-    console.log(e.target);
     try {
         const year = document.getElementById('year').value;
-        const { data: { expenses } } = await axios.get(`/user/annualReport?year=${year}`, { headers: { "Authorization": token } });
+        const { data: { expenses } } = await axios.get(`/user/annualReport?year=${year}`);
         document.getElementById('annual').innerHTML = `<tr><th>Month</th><th>Expense (in ₹)</th></tr>`;
         let total = 0;
         expenses.forEach(expense => {
@@ -116,43 +96,37 @@ document.getElementById('year').oninput = async (e) => {
     }
     catch (err) {
         console.log(err);
+        if (err.response.status === 401) {
+            alert('Please login again!')
+            return window.location.href = 'login.html';
+        }
+        alert(err.response.data);
     }
 }
 
-document.getElementById('download').onclick = async () => {
+document.getElementById('downloadBtn').onclick = () => downloadReport();
+document.getElementById('downloadIcon').onclick = () => downloadReport();
+
+async function downloadReport() {
     try {
-        const { data } = await axios.get('/user/downloadfile', { headers: { "Authorization": token } });
+        const { data } = await axios.get('/user/downloadfile');
         console.log(data);
         window.print();
         const a = document.createElement('a');
         a.href = data;
         a.download = 'expenses.csv';
         a.click();
-        
+
     }
     catch (err) {
         console.log(err);
     }
 }
 
-function hideElements(view) {
-    if (view == 'DAILY') {
-        document.getElementById('date').removeAttribute('style');
-        document.getElementById('month').style.display = 'none';
-        document.getElementById('week').style.display = 'none';
-    }
-    else if (view == 'MONTHLY') {
-        console.log('in here');
-        document.getElementById('month').removeAttribute('style');
-        document.getElementById('date').style.display = 'none';
-        document.getElementById('week').style.display = 'none';
-    }
-    else {
-        console.log('in else block');
-        document.getElementById('week').removeAttribute('style');
-        document.getElementById('date').style.display = 'none';
-        document.getElementById('month').style.display = 'none';
-    }
+function hideElements(selectedElement, elementNotSelected_1, elementNotSelected_2) {
+    selectedElement.classList.remove('d-none');
+    elementNotSelected_1.classList.add('d-none');
+    elementNotSelected_2.classList.add('d-none');
 }
 
 function getMonth(value) {
@@ -183,5 +157,14 @@ function getMonth(value) {
             return 'December';
         default:
             return 'nil'
+    }
+}
+
+document.querySelector('a[role = "button"]').onclick = async () => {
+    try {
+        await axios.get('/user/logout');
+        window.location.href = '/login.html';
+    } catch (err) {
+        console.log(err);
     }
 }
