@@ -107,6 +107,10 @@ exports.showLeaderboard = async (req, res, next) => {
     }
 }
 
+exports.premiumInfo = (req, res, next) => {
+    res.json(req.user.isPremiumUser);
+}
+
 exports.getDownloads = async (req, res, next) => {
     try {
         const files = await FileUrl.find({ user: req.user._id });

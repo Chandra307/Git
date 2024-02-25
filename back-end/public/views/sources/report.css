@@ -2,29 +2,29 @@
     min-height: 4rem;
     background-color: #3fa349;
 }
-.navbar a:hover, a.active {
-    color: white;
-}
-a[role="button"] {
+.container a {
+    text-decoration: none;
     color: #d8d4d4 !important;
+    font-family: verdana;
+}
+.container a:hover, .container a.active{
+    color: white !important;
 }
 div {
     margin: auto;
     width: fit-content;
 }
-
 table {
     margin: 1rem auto;
     border: 3px solid antiquewhite;
     background-color: #f7c465;
 }
-
 #downloadBtn {
     position: fixed;
     bottom: 3rem;
     right: 6rem;
     border: 1px solid wheat;
-    /* padding: 0.4rem; */
+    padding: 0.4rem;
     background-color: #3fa349;
     color: white;
     cursor: pointer;
@@ -46,23 +46,19 @@ table {
     height: 3rem;
     border-radius: 1.5rem;
 }
-
 #view {
     border: none;
     background-color: #dce9f6;
     /* font-size: 1.2rem; */
     outline: none;
 }
-
 #view,
 #daily label {
     font-size: 1.2rem;
 }
-
 #year {
     width: fit-content;
 }
-
 td[align] {
     position: relative;
     right: 2rem;

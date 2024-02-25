@@ -1,5 +1,67 @@
-const token = localStorage.getItem('token');
+"use strict";
+window.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const { data } = await axios.get('user/premiumInfo');
+        console.log(data);
+        data ? document.querySelector('.mt-4').classList.remove('d-none') :
+            document.querySelector('.premium').classList.remove('d-none');
+    }
+    catch (err) {
+        console.log(err);
+        err.response.status === 401 ? alert('Please login again') : alert(err.response.data);
+        window.location.href = '/login.html';
+    }
+})
+document.querySelector('#premiumBtn').onclick = async (e) => {
+    try {
+        const { data: { order, key_id } } = await axios.get('/premium/purchase');
 
+        var options = {
+            "key": key_id,
+            "name": "Pocket Tracker",
+            "description": "Test Transaction",
+            "order_id": order.id,
+            "theme": {
+                "color": "#3399cc"
+            },
+            "handler": async function (result) {
+                try {
+                    await axios.post('/premium/updateStatus', {
+                        order_id: options.order_id,
+                        payment_id: result.razorpay_payment_id
+                    });
+
+                    alert('Congrats, you are a premium user now!');
+                    document.querySelector('.premium').classList.add('d-none');
+                    document.querySelector('.mt-4').classList.remove('d-none');
+                }
+                catch (err) {
+                    console.log(err);
+                }
+            }
+        }
+        const rzpt = new Razorpay(options);
+        rzpt.open();
+        e.preventDefault();
+
+        rzpt.on('payment.failed', async function ({ error: { metadata } }) {
+            try {
+                await axios.post('/premium/updateStatus', {
+                    status: "failed",
+                    order_id: options.order_id,
+                    payment_id: metadata.payment_id
+                });
+                alert('Sorry, payment failed!');
+            }
+            catch (err) {
+                console.log(err);
+            }
+        })
+    }
+    catch (err) {
+        console.log(err);
+    }
+}
 document.getElementById('view').onchange = (e) => {
     const view = e.target.value;
 

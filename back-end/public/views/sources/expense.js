@@ -1,7 +1,6 @@
 "use strict";
 
 const ul = document.getElementById('expenses');
-// const token = localStorage.getItem('token');
 const pages = document.getElementById('pages');
 const selectNoOfExpenses = document.getElementById('per-page');
 const categorySelect = document.getElementById('category');
@@ -28,12 +27,15 @@ async function sendGetRequest(page) {
         }
         const { data: { expenses, pageData, ...i } } = await axios.get(`/expense/getexpenses?page=${page}&number=${number}`);
         if (!expenses.length) {
-            document.querySelector('.expenses').style.display = 'none';
-            document.querySelector('.welcome').innerHTML = `<p>Hi ${i.user}! Looks like you don't have any expenses. Click on the '+' button below to add one now! :)</p>`;
+            document.querySelector('.expenses').classList.add('d-none');
+            document.querySelector('.welcome').classList.remove('d-none');
+            document.querySelector('.welcome').innerHTML = `<p class='lead'>Hi, ${i.user}! 
+            All your expenses show up here. If they didn't, click on the '+' button below to
+            add expenses and you would find some :)</p>`
         }
         else {
-            document.querySelector('.welcome').innerHTML = '';
-            document.querySelector('.expenses').style.display = 'initial';
+            document.querySelector('.welcome').classList.add('d-none');
+            document.querySelector('.expenses').classList.remove('d-none');
             if (table.querySelector('tbody')) {
                 table.querySelector('tbody').remove();
             }
@@ -106,8 +108,6 @@ document.querySelector('form').onsubmit = async (e) => {
 
         if (!putId) {
             await axios.post('/expense/addexpense', expenseDetails);
-            // sendGetRequest(1);
-            // document.querySelector('dialog').close();
         }
         else {
             await axios.put(`/expense/editexpense/${putId}`, expenseDetails);
@@ -136,21 +136,18 @@ window.addEventListener('DOMContentLoaded', async () => {
 
         const { data: { files, premium } } = await axios.get('/user/downloads');
         if (premium) {
-
             showLeaderboard();
-            document.getElementById('premium').remove();
-            document.querySelector('.premium').textContent = 'Premium User';
-        }
-        else {
-            document.getElementById('premium').removeAttribute('style');
-            document.getElementById('premium').style.marginLeft = '1rem';
-
-        }
-        if (files.length) {
-
-            files.forEach(file => {
-                document.querySelector('#downloads').innerHTML += `<li><a href='${file.fileUrl}'>${new Date(file.time).toLocaleString()}</a></li>`;
-            })
+            if (files.length) { 
+                document.getElementById('downloads').innerHTML = `<h2 style='font-family: arial;'>
+                Downloads</h2>`;
+                files.forEach(file => {
+                    document.querySelector('#downloads').innerHTML += `<li><a href='${file.fileUrl}'>
+                    ${new Date(file.time).toLocaleString()}</a></li>`;
+                })
+            } else {
+                document.getElementById('downloads').innerHTML += `<p style='font-family: arial;'>
+                No downloads yet!</p>`;
+            }
         }
     }
     catch (err) {
@@ -159,68 +156,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 })
 
-document.getElementById('premium').onclick = async (e) => {
-    try {
-        const { data: { order, key_id } } = await axios.get('/premium/purchase');
-
-        var options = {
-            "key": key_id,
-            "name": "Pocket Tracker",
-            "description": "Test Transaction",
-            "order_id": order.id,
-            "theme": {
-                "color": "#3399cc"
-            },
-            "handler": async function (result) {
-                try {
-                    await axios.post('/premium/updateStatus', {
-                        order_id: options.order_id,
-                        payment_id: result.razorpay_payment_id
-                    });
-
-                    alert('Congrats, you are a premium user now!');
-                    document.getElementById('premium').remove();
-                    showLeaderboard();
-                    document.querySelector('.premium').textContent = 'Premium User';
-                }
-                catch (err) {
-                    console.log(err);
-                }
-            }
-        }
-        const rzp1 = new Razorpay(options);
-        rzp1.open();
-        e.preventDefault();
-
-        rzp1.on('payment.failed', async function ({ error: { metadata } }) {
-            try {
-                await axios.post('/premium/updateStatus', {
-                    status: "failed",
-                    order_id: options.order_id,
-                    payment_id: metadata.payment_id
-                });
-                alert('Sorry, payment failed!');
-            }
-            catch (err) {
-                console.log(err);
-            }
-        })
-    }
-    catch (err) {
-        console.log(err);
-    }
-}
-
 function displayExpenses(obj, index, limit, page) {
     let number;
+
     if (limit && page) {
         number = ((page - 1) * limit) + index + 1;
     }
-    // ul.innerHTML += `<li id='${obj._id}' class='list-group-item'><div>${number}. ₹${obj.amount} - ${obj.description} - ${obj.category}</div>
-    //                 <button class='btn btn-outline-danger btn-sm' onclick='deleteExpense("${obj._id}")' title='Delete'>
-    //                 <span class='bi bi-trash'></span></button>
-    //                 <button class='btn btn-outline-success btn-sm' onclick='editExpense("${obj._id}")' title='Edit'>
-    //                 <span class='bi bi-pencil'></span></button></li>`;
 
     return `<tr id="${obj._id}" onclick="displayMenu.call(this)" style="cursor: pointer;"><th scope='row'>${number}</th><td>${obj.date.slice(0, 10)}</td>
     <td>${obj.description}</td><td class='d-md-table-cell d-none'>${obj.category}</td>
@@ -236,20 +177,22 @@ function displayExpenses(obj, index, limit, page) {
 function displayMenu() {
     this?.querySelector('i').classList.toggle('d-none');
 }
+
 function showLeaderboard() {
 
-    document.getElementById('leader').removeAttribute('style');
+    document.querySelector('.dashboard').classList.remove('d-none');
 
-    document.querySelector('#leader').onclick = async (e) => {
+    document.querySelector('#leaderboard').onclick = async (e) => {
         try {
-            document.getElementById('leaderboard').innerHTML = `<h2 style='font-family: arial;'>Leaderboard</h2>`;
+            document.getElementById('leaderboard').innerHTML = `<h2 style='font-family: arial;
+            cursor: pointer;'>Leaderboard</h2>`;
 
             const { data: { users, loggedInUser } } = await axios.get('/premium/leaderboard');
 
             users.forEach((detail, index) => {
                 let name;
                 name = detail.name === loggedInUser ? detail.name + ' (You) ' : detail.name;
-                document.getElementById('leaderboard').innerHTML += `<li id='${detail.id}}' style='font-size: 1.1rem;'>${index + 1}. ${name} - Total expenses: ₹${Number(detail.totalExpenses)}</li>`;
+                document.getElementById('leaderboard').innerHTML += `<li id='${detail._id}}' style='font-size: 1.1rem;'>${index + 1}. ${name} - Total expenses: ₹${Number(detail.totalExpenses)}</li>`;
             });
         }
         catch (err) {
@@ -264,8 +207,6 @@ async function deleteExpense(id) {
         if (document.querySelector('#error')) {
             document.querySelector('#error').remove();
         }
-
-        const token = localStorage.getItem('token');
         if (confirm('Delete this expense?')) {
 
             await axios.delete(`/expense/delete-expense/${id}`);
